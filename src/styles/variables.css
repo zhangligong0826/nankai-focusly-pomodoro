@@ -13,6 +13,7 @@
   --color-success-hover: #27ad60;
   --color-warning: #f39c12;          /* 警告橙 */
   --color-info: #3498db;             /* 信息蓝 */
+  --color-category-research: #9b59b6; /* 科研分类紫 */
 
   /* ===== 专注模式色（短休绿 / 长休蓝） ===== */
   --color-focus: #e74c3c;
@@ -93,6 +94,7 @@
   --color-success-hover: #3dd980;
   --color-warning: #f5a623;
   --color-info: #4aa3e8;
+  --color-category-research: #bb8fce;
 
   --color-focus: #ff5a4d;
   --color-short-break: #2ecc71;

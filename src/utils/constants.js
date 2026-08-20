@@ -112,7 +112,7 @@ export const LS_KEY = Object.freeze({
 export const CATEGORY_META = Object.freeze({
   [TASK_CATEGORY.PROFESSIONAL]: { label: '专业课', color: 'var(--color-info)' },
   [TASK_CATEGORY.ENGLISH]: { label: '英语', color: 'var(--color-success)' },
-  [TASK_CATEGORY.RESEARCH]: { label: '科研', color: '#9b59b6' },
+  [TASK_CATEGORY.RESEARCH]: { label: '科研', color: 'var(--color-category-research)' },
   [TASK_CATEGORY.OTHER]: { label: '其他', color: 'var(--color-text-tertiary)' },
 })
 

@@ -34,6 +34,7 @@ const form = reactive({
 const errors = reactive({
   title: '',
   plannedPomodoros: '',
+  note: '',
 })
 
 const categories = [
@@ -74,6 +75,7 @@ watch(
     }
     errors.title = ''
     errors.plannedPomodoros = ''
+    errors.note = ''
   }
 )
 
@@ -81,6 +83,7 @@ function validate() {
   let ok = true
   errors.title = ''
   errors.plannedPomodoros = ''
+  errors.note = ''
   if (!form.title.trim()) {
     errors.title = '请输入任务标题'
     ok = false
@@ -88,8 +91,8 @@ function validate() {
     errors.title = `标题不能超过 ${LIMITS.TITLE_MAX} 字`
     ok = false
   }
-  if (form.note.length > LIMITS.NOTE_MAX) {
-    errors.title = errors.title || ''
+  // 备注超长校验（maxlength 已限制输入，但校验逻辑保持完整）
+  if ((form.note || '').length > LIMITS.NOTE_MAX) {
     errors.note = `备注不能超过 ${LIMITS.NOTE_MAX} 字`
     ok = false
   }
@@ -153,9 +156,11 @@ async function onSubmit() {
         <textarea
           v-model="form.note"
           class="form-input form-textarea"
+          :class="{ 'is-error': errors.note }"
           placeholder="可选，重点或注意事项"
           maxlength="200"
         ></textarea>
+        <span class="form-error" v-if="errors.note">{{ errors.note }}</span>
       </div>
 
       <div class="form-row form-row--2col">

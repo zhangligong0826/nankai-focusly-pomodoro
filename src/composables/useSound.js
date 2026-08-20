@@ -52,8 +52,6 @@ export function useSound() {
 
     osc.type = 'sine'
     osc.frequency.setValueAtTime(880, now) // A5 更清脆
-    // 二次谐波增加厚度
-    osc.frequency.setValueAtTime(880, now)
 
     // ADSR 包络：快速起音 + 平滑衰减
     gain.gain.setValueAtTime(0, now)
