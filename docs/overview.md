@@ -58,10 +58,13 @@ vite v5.4.21 building for production...
 ## Git提交记录
 
 ```
+d26c6f3 docs: 添加测试报告和项目总览文档
 6dc1bd7 feat: 初始化 Focusly 番茄时钟项目
 ```
-- 83 files changed, 12,272 insertions
+- 提交1：83 files, 12,272 insertions（全部源码+文档）
+- 提交2：3 files, 381 insertions（测试报告+总览+工作日志）
 - 已推送到 `origin/main`
+- GitHub仓库：https://github.com/zhangligong0826/nankai-focusly-pomodoro
 
 ## 文件结构（48个源文件）
 
