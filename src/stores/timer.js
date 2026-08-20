@@ -17,6 +17,7 @@ import { useNotification } from '@/composables/useNotification'
 import { useDocumentTitle } from '@/composables/useDocumentTitle'
 import { generateUUID } from '@/utils/uuid'
 import { getTodayStr } from '@/utils/date'
+import { advanceCountdown } from '@/utils/timer'
 import {
   TIMER_MODE,
   TIMER_STATUS,
@@ -109,14 +110,17 @@ export const useTimerStore = defineStore('timer', () => {
    * 每秒 tick：减 1，归零则完成
    */
   function tick() {
-    if (remainingSeconds.value <= 0) {
-      clearTimer()
-      complete(false)
-      return
-    }
-    remainingSeconds.value -= 1
+    const { remainingSeconds: nextSeconds, completed } = advanceCountdown(
+      remainingSeconds.value
+    )
+    remainingSeconds.value = nextSeconds
     // 实时更新页面标题
     title.updateTitle(remainingSeconds.value, mode.value)
+    // 在刚归零的这一次 tick 立即完成，避免 00:00 额外停留一个 interval。
+    if (completed) {
+      clearTimer()
+      complete(false)
+    }
   }
 
   /**
@@ -127,6 +131,8 @@ export const useTimerStore = defineStore('timer', () => {
     clearTimer()
     // 重新读取配置轮数
     totalRounds.value = settingsStore.config.longBreakInterval || 4
+    // 应用异步初始化尚未完成时，仍保证从当前模式的完整时长开始。
+    if (remainingSeconds.value <= 0) resetRemaining()
     status.value = TIMER_STATUS.RUNNING
     intervalId = setInterval(tick, 1000)
   }

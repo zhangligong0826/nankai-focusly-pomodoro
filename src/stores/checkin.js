@@ -10,6 +10,7 @@ import checkinApi from '@/api/checkin'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
 import { getTodayStr, addDays, diffDays } from '@/utils/date'
+import { mergeTodayCheckin } from '@/utils/checkin'
 import { LS_KEY } from '@/utils/constants'
 
 export const useCheckinStore = defineStore('checkin', () => {
@@ -154,8 +155,8 @@ export const useCheckinStore = defineStore('checkin', () => {
         // 用 API 返回校正（保持与服务端一致）
         const t = checkins.value.find((c) => c.date === today)
         if (t && apiRes.pomodoroCount !== undefined) {
-          t.pomodoroCount = apiRes.pomodoroCount
-          t.totalMinutes = apiRes.totalMinutes
+          // 不能用较小的远端累计覆盖本地离线数据（例如 Mock 服务重启后）。
+          Object.assign(t, mergeTodayCheckin(t, apiRes))
           refreshToday()
           persist()
         }

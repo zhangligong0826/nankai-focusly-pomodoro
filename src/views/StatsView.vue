@@ -4,14 +4,16 @@
  * @description StatsSummary + [本周][本月] Tab + 图表 + StreakBadge；onMounted 并行请求
  */
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useStatsStore } from '@/stores/stats'
+import { useCheckinStore } from '@/stores/checkin'
 import StatsSummary from '@/components/stats/StatsSummary.vue'
 import WeeklyChart from '@/components/stats/WeeklyChart.vue'
 import MonthlyChart from '@/components/stats/MonthlyChart.vue'
 import StreakBadge from '@/components/stats/StreakBadge.vue'
 
 const statsStore = useStatsStore()
+const checkinStore = useCheckinStore()
 
 const activeTab = ref('weekly')
 
@@ -26,6 +28,17 @@ onMounted(() => {
   statsStore.fetchSummary()
   statsStore.fetchWeekly()
 })
+
+// 计时器跨路由持续运行；统计页停留期间也应在新的打卡产生后刷新。
+watch(
+  () => checkinStore.checkins,
+  () => {
+    statsStore.fetchSummary()
+    if (activeTab.value === 'weekly') statsStore.fetchWeekly()
+    else statsStore.fetchMonthly()
+  },
+  { deep: true }
+)
 </script>
 
 <template>

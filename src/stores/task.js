@@ -10,7 +10,8 @@ import taskApi from '@/api/task'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
 import { generateUUID } from '@/utils/uuid'
-import { getTodayStr, getTomorrowStr, diffDays } from '@/utils/date'
+import { getTodayStr } from '@/utils/date'
+import { groupTasks } from '@/utils/task'
 import {
   LS_KEY,
   TASK_STATUS,
@@ -69,39 +70,7 @@ export const useTaskStore = defineStore('task', () => {
    * @returns {Array<{key:string,label:string,tasks:object[]}>}
    */
   const groupedTasks = computed(() => {
-    const today = getTodayStr()
-    const tomorrow = getTomorrowStr()
-    const groups = {
-      today: { key: 'today', label: '今日', tasks: [] },
-      tomorrow: { key: 'tomorrow', label: '明日', tasks: [] },
-      future: { key: 'future', label: '未来', tasks: [] },
-      done: { key: 'done', label: '已完成', tasks: [] },
-    }
-    // 仅在当前筛选允许的范围内分组
-    for (const t of tasks.value) {
-      if (t.status === TASK_STATUS.DONE) {
-        groups.done.tasks.push(t)
-        continue
-      }
-      if (!t.dueDate) {
-        groups.today.tasks.push(t) // 无日期归入今日
-      } else {
-        const d = diffDays(t.dueDate, today)
-        if (d <= 0) groups.today.tasks.push(t)
-        else if (d === 1) groups.tomorrow.tasks.push(t)
-        else groups.future.tasks.push(t)
-      }
-    }
-    // 各组内部排序
-    const sortFn = (a, b) => {
-      const aw = (PRIORITY_META[a.priority] || PRIORITY_META[PRIORITY.MEDIUM]).weight
-      const bw = (PRIORITY_META[b.priority] || PRIORITY_META[PRIORITY.MEDIUM]).weight
-      if (aw !== bw) return aw - bw
-      return b.createdAt - a.createdAt
-    }
-    Object.values(groups).forEach((g) => g.tasks.sort(sortFn))
-    // 过滤空组
-    return Object.values(groups).filter((g) => g.tasks.length > 0)
+    return groupTasks(tasks.value, filter.value)
   })
 
   /**
