@@ -6,6 +6,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { viteMockServe } from 'vite-plugin-mock'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 // https://vitejs.dev/config/
@@ -18,6 +19,36 @@ export default defineConfig(({ command }) => ({
       // 仅在 dev serve 时启用，避免 build 阶段无谓处理
       enable: command === 'serve',
       logger: true,
+    }),
+    // PWA：离线可用 + 添加到主屏（仅生产构建时生成 Service Worker）
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
+      manifest: {
+        name: 'Focusly 番茄时钟',
+        short_name: 'Focusly',
+        description: '专注学习打卡工具，集番茄计时、任务管理、每日打卡、数据统计于一体',
+        theme_color: '#E74C3C',
+        background_color: '#FFFFFF',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/nankai-focusly-pomodoro/',
+        scope: '/nankai-focusly-pomodoro/',
+        icons: [
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        navigateFallback: '/nankai-focusly-pomodoro/index.html',
+      },
     }),
   ],
   resolve: {

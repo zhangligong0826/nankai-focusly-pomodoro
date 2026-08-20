@@ -9,13 +9,28 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './styles/global.css'
+import { registerSW } from 'virtual:pwa-register'
 import { useLocalStorage } from './composables/useLocalStorage'
+import { showToast } from './composables/useToast'
 import { useSettingsStore } from './stores/settings'
 import { useTaskStore } from './stores/task'
 import { useCheckinStore } from './stores/checkin'
 import { useStatsStore } from './stores/stats'
 import { useTimerStore } from './stores/timer'
 import { LS_KEY, THEME } from './utils/constants'
+
+// 注册 Service Worker（PWA：离线可用 + 自动更新）
+if ('serviceWorker' in navigator) {
+  registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      showToast('有新版本可用，刷新页面即可更新', 'info', 4000)
+    },
+    onOfflineReady() {
+      showToast('应用已可离线使用', 'success')
+    },
+  })
+}
 
 const app = createApp(App)
 const pinia = createPinia()

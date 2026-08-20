@@ -15,7 +15,7 @@ const emit = defineEmits(['action'])
 <template>
   <div class="empty-state">
     <div class="empty-image">
-      <img v-if="image" :src="image" alt="" />
+      <img v-if="image" :src="image" alt="" loading="lazy" width="120" height="120" />
       <svg v-else width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
         <rect x="3" y="3" width="18" height="18" rx="2" />
         <path d="M9 9h6M9 13h6M9 17h3" />

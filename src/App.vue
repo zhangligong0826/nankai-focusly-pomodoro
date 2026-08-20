@@ -5,21 +5,28 @@
  *   全局专注锁定监听 + 阶段提醒 + 庆祝弹窗
  */
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useResponsive } from '@/composables/useResponsive'
 import { useFocusLock, warningVisible } from '@/composables/useFocusLock'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useTimerStore } from '@/stores/timer'
+import { TIMER_STATUS } from '@/utils/constants'
 import AppHeader from '@/components/common/AppHeader.vue'
 import AppSidebar from '@/components/common/AppSidebar.vue'
 import AppTabBar from '@/components/common/AppTabBar.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BaseToast from '@/components/common/BaseToast.vue'
+import ShortcutsPanel from '@/components/common/ShortcutsPanel.vue'
 import BreakReminder from '@/components/timer/BreakReminder.vue'
 import DailyGoalCelebration from '@/components/timer/DailyGoalCelebration.vue'
 
+const router = useRouter()
 const { isMobile, isTablet, isPC } = useResponsive()
 const timerStore = useTimerStore()
 const { emergencyPause, dismissWarning } = useFocusLock()
+
+const showShortcuts = ref(false)
 
 const layoutClass = computed(() => ({
   'app-layout': true,
@@ -27,6 +34,25 @@ const layoutClass = computed(() => ({
   'app-layout--tablet': isTablet.value,
   'app-layout--pc': isPC.value,
 }))
+
+/** 空格：开始/暂停/继续计时 */
+function toggleTimer() {
+  if (timerStore.status === TIMER_STATUS.RUNNING) timerStore.pause()
+  else if (timerStore.status === TIMER_STATUS.PAUSED) timerStore.resume()
+  else timerStore.start()
+}
+
+// 全局快捷键（输入框内不触发，见 useKeyboardShortcuts）
+useKeyboardShortcuts({
+  space: toggleTimer,
+  'ctrl+n': () => router.push('/tasks'),
+  '1': () => router.push('/'),
+  '2': () => router.push('/tasks'),
+  '3': () => router.push('/stats'),
+  '?': () => {
+    showShortcuts.value = !showShortcuts.value
+  },
+})
 </script>
 
 <template>
@@ -57,6 +83,9 @@ const layoutClass = computed(() => ({
 
     <!-- 全局：每日目标庆祝 -->
     <DailyGoalCelebration />
+
+    <!-- 全局：快捷键帮助面板 -->
+    <ShortcutsPanel :visible="showShortcuts" @close="showShortcuts = false" />
 
     <!-- 全局：专注锁定警告 -->
     <BaseModal

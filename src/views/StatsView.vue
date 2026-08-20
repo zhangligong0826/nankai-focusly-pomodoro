@@ -10,6 +10,7 @@ import { useCheckinStore } from '@/stores/checkin'
 import StatsSummary from '@/components/stats/StatsSummary.vue'
 import WeeklyChart from '@/components/stats/WeeklyChart.vue'
 import MonthlyChart from '@/components/stats/MonthlyChart.vue'
+import CategoryPieChart from '@/components/stats/CategoryPieChart.vue'
 import StreakBadge from '@/components/stats/StreakBadge.vue'
 
 const statsStore = useStatsStore()
@@ -20,7 +21,8 @@ const activeTab = ref('weekly')
 function switchTab(tab) {
   activeTab.value = tab
   if (tab === 'weekly') statsStore.fetchWeekly()
-  else statsStore.fetchMonthly()
+  else if (tab === 'monthly') statsStore.fetchMonthly()
+  // category 不依赖 statsStore，由 CategoryPieChart 自行读取 taskStore
 }
 
 onMounted(() => {
@@ -62,6 +64,13 @@ watch(
       >
         本月
       </button>
+      <button
+        class="chart-tab"
+        :class="{ 'chart-tab--active': activeTab === 'category' }"
+        @click="switchTab('category')"
+      >
+        分类占比
+      </button>
     </div>
 
     <WeeklyChart
@@ -70,10 +79,11 @@ watch(
       :loading="statsStore.isLoading"
     />
     <MonthlyChart
-      v-else
+      v-else-if="activeTab === 'monthly'"
       :data="statsStore.monthlyData"
       :loading="statsStore.isLoading"
     />
+    <CategoryPieChart v-else />
 
     <StreakBadge />
   </div>

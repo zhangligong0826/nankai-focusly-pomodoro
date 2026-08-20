@@ -34,6 +34,7 @@ const isEmpty = computed(() => tasks.value.length === 0)
       <TaskItem
         v-for="t in tasks"
         :key="t.id"
+        v-memo="[t.status, t.completedPomodoros, t.priority, t.dueDate]"
         :task="t"
         @edit="(task) => emit('edit', task)"
         @delete="(task) => emit('delete', task)"
