@@ -25,6 +25,15 @@ const focusLock = computed(() => settingsStore.settings.focusLock)
 function toggleFocusLock() {
   settingsStore.toggleFocusLock()
 }
+
+/** 全局快捷键清单（与 useKeyboardShortcuts / useFocusLock 保持一致） */
+const shortcuts = [
+  { keys: ['Space'], desc: '开始 / 暂停计时（聚焦计时按钮时）' },
+  { keys: ['Ctrl', 'P'], desc: '紧急暂停专注（Mac 为 Cmd + P）' },
+  { keys: ['1', '2', '3', '4'], desc: '切换 Tab（计时 / 任务 / 统计 / 设置）' },
+  { keys: ['?'], desc: '显示 / 隐藏快捷键帮助' },
+  { keys: ['Esc'], desc: '关闭弹窗' },
+]
 </script>
 
 <template>
@@ -59,6 +68,19 @@ function toggleFocusLock() {
     <section class="settings-section card">
       <h3 class="section-title">🔊 声音与白噪音</h3>
       <WhiteNoisePlayer />
+    </section>
+
+    <!-- 快捷键 -->
+    <section class="settings-section card">
+      <h3 class="section-title">⌨️ 快捷键</h3>
+      <ul class="shortcut-list">
+        <li v-for="s in shortcuts" :key="s.keys.join('-')" class="shortcut-item">
+          <span class="shortcut-keys">
+            <kbd v-for="k in s.keys" :key="k">{{ k }}</kbd>
+          </span>
+          <span class="shortcut-desc">{{ s.desc }}</span>
+        </li>
+      </ul>
     </section>
 
     <!-- 每日目标 -->
@@ -115,6 +137,25 @@ function toggleFocusLock() {
 .row-tip {
   font-size: var(--font-size-xs);
   margin-top: var(--spacing-xs);
+}
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+.shortcut-keys {
+  display: flex;
+  gap: 4px;
+  min-width: 120px;
+}
+.shortcut-desc {
+  color: var(--color-text-secondary);
 }
 .goal-row {
   display: flex;

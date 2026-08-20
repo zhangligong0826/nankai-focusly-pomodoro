@@ -51,12 +51,17 @@ function endPress() {
         :color="modeColor"
       />
       <div class="ring-center">
-        <div class="time-text" :style="{ color: modeColor }">{{ displayTime }}</div>
-        <div class="mode-label">{{ modeLabel }}</div>
+        <div class="time-text" :style="{ color: modeColor }" role="timer" aria-live="off">{{ displayTime }}</div>
+        <div class="mode-label" aria-live="polite">{{ modeLabel }}</div>
       </div>
     </div>
 
-    <div class="round-indicator" v-if="store.mode === 'focus'">
+    <div
+      class="round-indicator"
+      v-if="store.mode === 'focus'"
+      role="group"
+      :aria-label="`当前第 ${store.currentRound} 轮，共 ${store.totalRounds || 4} 轮`"
+    >
       <span
         v-for="n in roundDots"
         :key="n"

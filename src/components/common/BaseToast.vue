@@ -22,6 +22,8 @@ const typeIcon = (type) => {
       :key="t.id"
       class="toast"
       :class="typeClass(t.type)"
+      :role="t.type === 'error' ? 'alert' : 'status'"
+      :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
       @click="removeToast(t.id)"
     >
       <span class="toast-icon">{{ typeIcon(t.type) }}</span>

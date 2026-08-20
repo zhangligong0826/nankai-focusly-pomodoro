@@ -140,33 +140,36 @@ async function onSubmit() {
   >
     <form class="task-form" @submit.prevent="onSubmit">
       <div class="form-row">
-        <label class="form-label">任务标题 <span class="required">*</span></label>
+        <label class="form-label" for="task-title">任务标题 <span class="required">*</span></label>
         <input
+          id="task-title"
           v-model="form.title"
           class="form-input"
           :class="{ 'is-error': errors.title }"
           placeholder="如：复习高等数学第三章"
           maxlength="50"
         />
-        <span class="form-error" v-if="errors.title">{{ errors.title }}</span>
+        <span class="form-error" v-if="errors.title" role="alert">{{ errors.title }}</span>
       </div>
 
       <div class="form-row">
-        <label class="form-label">备注</label>
+        <label class="form-label" for="task-note">备注</label>
         <textarea
+          id="task-note"
           v-model="form.note"
           class="form-input form-textarea"
           :class="{ 'is-error': errors.note }"
           placeholder="可选，重点或注意事项"
           maxlength="200"
         ></textarea>
-        <span class="form-error" v-if="errors.note">{{ errors.note }}</span>
+        <span class="form-error" v-if="errors.note" role="alert">{{ errors.note }}</span>
       </div>
 
       <div class="form-row form-row--2col">
         <div class="form-col">
-          <label class="form-label">计划番茄数</label>
+          <label class="form-label" for="task-pomodoros">计划番茄数</label>
           <input
+            id="task-pomodoros"
             v-model.number="form.plannedPomodoros"
             type="number"
             class="form-input"
@@ -174,24 +177,24 @@ async function onSubmit() {
             min="1"
             max="20"
           />
-          <span class="form-error" v-if="errors.plannedPomodoros">{{ errors.plannedPomodoros }}</span>
+          <span class="form-error" v-if="errors.plannedPomodoros" role="alert">{{ errors.plannedPomodoros }}</span>
         </div>
         <div class="form-col">
-          <label class="form-label">截止日期</label>
-          <input v-model="form.dueDate" type="date" class="form-input" />
+          <label class="form-label" for="task-duedate">截止日期</label>
+          <input id="task-duedate" v-model="form.dueDate" type="date" class="form-input" />
         </div>
       </div>
 
       <div class="form-row form-row--2col">
         <div class="form-col">
-          <label class="form-label">分类</label>
-          <select v-model="form.category" class="form-input">
+          <label class="form-label" for="task-category">分类</label>
+          <select id="task-category" v-model="form.category" class="form-input">
             <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
           </select>
         </div>
         <div class="form-col">
-          <label class="form-label">优先级</label>
-          <select v-model="form.priority" class="form-input">
+          <label class="form-label" for="task-priority">优先级</label>
+          <select id="task-priority" v-model="form.priority" class="form-input">
             <option v-for="p in priorities" :key="p.value" :value="p.value">{{ p.label }}</option>
           </select>
         </div>

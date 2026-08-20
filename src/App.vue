@@ -31,13 +31,15 @@ const layoutClass = computed(() => ({
 
 <template>
   <div :class="layoutClass">
+    <a href="#main-content" class="skip-link">跳到主内容</a>
+
     <AppHeader class="app-header" />
 
     <template v-if="isPC">
       <AppSidebar class="app-sidebar" />
     </template>
 
-    <main class="app-main">
+    <main id="main-content" class="app-main" tabindex="-1">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -66,7 +68,10 @@ const layoutClass = computed(() => ({
     >
       <div class="lock-warning">
         <p>检测到你离开了专注页面，快回来继续学习吧 💪</p>
-        <p class="text-tertiary text-sm">如需中断，可点击下方「紧急暂停」（或快捷键 Ctrl/Cmd + P）</p>
+        <p class="text-tertiary text-sm">
+          如需中断，可点击下方「紧急暂停」或使用快捷键
+          <kbd>Ctrl</kbd> + <kbd>P</kbd>（Mac 为 <kbd>Cmd</kbd> + <kbd>P</kbd>）
+        </p>
       </div>
       <template #footer>
         <button class="btn btn-primary" @click="dismissWarning">继续专注</button>

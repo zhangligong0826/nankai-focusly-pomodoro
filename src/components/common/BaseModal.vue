@@ -4,7 +4,7 @@
  * @description props(visible/title/maskClosable/escClosable)，Esc 关闭、遮罩点击关闭、Transition 动画
  */
 <script setup>
-import { watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -16,6 +16,25 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'update:visible'])
 
+/** 弹窗内容容器（用于焦点管理） */
+const contentRef = ref(null)
+/** 打开弹窗前获得焦点的元素（关闭时恢复） */
+let previouslyFocused = null
+
+/** 可聚焦元素选择器 */
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+/**
+ * 获取弹窗内当前可聚焦元素
+ * @returns {HTMLElement[]}
+ */
+function getFocusable() {
+  const el = contentRef.value
+  if (!el) return []
+  return Array.from(el.querySelectorAll(FOCUSABLE_SELECTOR))
+}
+
 function close() {
   emit('update:visible', false)
   emit('close')
@@ -25,19 +44,56 @@ function onMaskClick() {
   if (props.maskClosable) close()
 }
 
-function onEsc(e) {
-  if (props.escClosable && props.visible && e.key === 'Escape') close()
+function onEsc() {
+  if (props.escClosable && props.visible) close()
 }
 
-onMounted(() => window.addEventListener('keydown', onEsc))
-onUnmounted(() => window.removeEventListener('keydown', onEsc))
+/**
+ * 键盘处理：Esc 关闭 + Tab 焦点循环（Focus Trap）
+ */
+function onKeydown(e) {
+  if (e.key === 'Escape') {
+    onEsc()
+    return
+  }
+  if (e.key !== 'Tab') return
+  const focusable = getFocusable()
+  if (focusable.length === 0) return
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  const active = document.activeElement
+  // 焦点在最后一个元素（或已移出弹窗）时，Tab 回到第一个
+  if (e.shiftKey && (active === first || !contentRef.value.contains(active))) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && (active === last || !contentRef.value.contains(active))) {
+    e.preventDefault()
+    first.focus()
+  }
+}
 
-// 锁定背景滚动
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
+// 锁定背景滚动 + 焦点移入/恢复
 watch(
   () => props.visible,
   (v) => {
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = v ? 'hidden' : ''
+    if (typeof document === 'undefined') return
+    document.body.style.overflow = v ? 'hidden' : ''
+    if (v) {
+      previouslyFocused = document.activeElement
+      nextTick(() => {
+        const el = contentRef.value
+        if (!el) return
+        // 优先聚焦第一个可交互元素，否则聚焦容器本身
+        const target = getFocusable()[0] || el
+        target.focus()
+      })
+    } else if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+      // 关闭时恢复焦点到触发按钮
+      previouslyFocused.focus()
+      previouslyFocused = null
     }
   }
 )
@@ -45,8 +101,8 @@ watch(
 
 <template>
   <Transition name="modal">
-    <div v-if="visible" class="modal-mask" @click.self="onMaskClick">
-      <div class="modal-content" :style="{ maxWidth: width }" role="dialog" aria-modal="true">
+    <div v-if="visible" class="modal-mask" aria-modal="true" @click.self="onMaskClick">
+      <div ref="contentRef" class="modal-content" :style="{ maxWidth: width }" role="dialog" tabindex="-1">
         <div class="modal-header" v-if="title || $slots.header">
           <slot name="header">
             <h3 class="modal-title">{{ title }}</h3>

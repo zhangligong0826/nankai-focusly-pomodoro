@@ -21,6 +21,19 @@ const dashOffset = computed(() => {
   return circumference.value * (1 - p)
 })
 const center = computed(() => props.size / 2)
+
+/** 进度百分比（0-100） */
+const percent = computed(() =>
+  Math.round(Math.min(1, Math.max(0, props.progress)) * 100)
+)
+/** 无障碍标签：完成时提示"专注完成！" */
+const ariaLabel = computed(() =>
+  props.progress >= 1 ? '专注完成！' : `专注进度 ${percent.value}%`
+)
+/** SVG <title>：悬停/读屏的语义描述 */
+const titleText = computed(() =>
+  props.progress >= 1 ? '专注完成！' : `当前专注进度 ${percent.value}%`
+)
 </script>
 
 <template>
@@ -29,7 +42,10 @@ const center = computed(() => props.size / 2)
     :height="size"
     :viewBox="`0 0 ${size} ${size}`"
     class="circular-progress"
+    role="img"
+    :aria-label="ariaLabel"
   >
+    <title>{{ titleText }}</title>
     <!-- 底环 -->
     <circle
       :cx="center"
