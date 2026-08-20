@@ -29,6 +29,7 @@ export default defineConfig(({ command }) => ({
   base: '/nankai-focusly-pomodoro/',
   build: {
     outDir: 'dist',
+    emptyOutDir: false,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {

@@ -35,3 +35,7 @@ pnpm-debug.log*
 # Misc
 .cache/
 .temp/
+
+# Vite temp files
+vite.config.js.timestamp-*
+*.timestamp-*.mjs
