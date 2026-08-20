@@ -11,7 +11,7 @@ import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
 import { generateUUID } from '@/utils/uuid'
 import { getTodayStr } from '@/utils/date'
-import { groupTasks } from '@/utils/task'
+import { groupTasks, filterTasks } from '@/utils/task'
 import {
   LS_KEY,
   TASK_STATUS,
@@ -46,10 +46,7 @@ export const useTaskStore = defineStore('task', () => {
    * 筛选后的任务列表（按筛选条件 + 排序）
    */
   const filteredTasks = computed(() => {
-    let list = tasks.value
-    if (filter.value !== 'all') {
-      list = list.filter((t) => t.status === filter.value)
-    }
+    const list = filterTasks(tasks.value, filter.value)
     // 排序：未完成优先 → 优先级权重 → 创建时间倒序
     return [...list].sort((a, b) => {
       // 已完成排后

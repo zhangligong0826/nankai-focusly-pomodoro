@@ -10,6 +10,18 @@ function sortByPriorityThenCreatedAt(a, b) {
 }
 
 /**
+ * 按状态筛选任务（filter=all 时原样返回）。
+ * @param {object[]} tasks
+ * @param {string} [filter='all']
+ * @returns {object[]}
+ */
+export function filterTasks(tasks, filter = 'all') {
+  if (!Array.isArray(tasks)) return []
+  if (filter === 'all') return tasks
+  return tasks.filter((task) => task.status === filter)
+}
+
+/**
  * 按当前筛选条件将任务归入日期分组。
  * @param {object[]} tasks
  * @param {string} filter
@@ -49,4 +61,4 @@ export function groupTasks(
     .filter((group) => group.tasks.length > 0)
 }
 
-export default { groupTasks }
+export default { groupTasks, filterTasks }

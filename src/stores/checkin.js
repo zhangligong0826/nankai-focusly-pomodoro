@@ -9,8 +9,8 @@ import { ref, computed } from 'vue'
 import checkinApi from '@/api/checkin'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
-import { getTodayStr, addDays, diffDays } from '@/utils/date'
-import { mergeTodayCheckin } from '@/utils/checkin'
+import { getTodayStr } from '@/utils/date'
+import { mergeTodayCheckin, computeStreak, computeLongestStreak } from '@/utils/checkin'
 import { LS_KEY } from '@/utils/constants'
 
 export const useCheckinStore = defineStore('checkin', () => {
@@ -36,45 +36,17 @@ export const useCheckinStore = defineStore('checkin', () => {
    * 当前连续打卡天数（今日未打卡则从昨日起算，给当天宽限）
    * @returns {number}
    */
-  const streak = computed(() => {
-    if (!checkins.value.length) return 0
-    const dates = new Set(checkins.value.map((c) => c.date))
-    const today = getTodayStr()
-    let cursor = today
-    // 今日未打卡则从昨日起算（不因"今天还没学"就断 streak）
-    if (!dates.has(today)) cursor = addDays(today, -1)
-    let count = 0
-    while (dates.has(cursor)) {
-      count++
-      cursor = addDays(cursor, -1)
-    }
-    return count
-  })
+  const streak = computed(() =>
+    computeStreak(checkins.value.map((c) => c.date), getTodayStr())
+  )
 
   /**
    * 最长连续打卡天数
    * @returns {number}
    */
-  const longestStreak = computed(() => {
-    if (!checkins.value.length) return 0
-    const sorted = [...checkins.value]
-      .map((c) => c.date)
-      .sort()
-    let max = 1
-    let cur = 1
-    for (let i = 1; i < sorted.length; i++) {
-      if (diffDays(sorted[i], sorted[i - 1]) === 1) {
-        cur++
-        if (cur > max) max = cur
-      } else if (sorted[i] === sorted[i - 1]) {
-        // 重复日期跳过
-        continue
-      } else {
-        cur = 1
-      }
-    }
-    return max
-  })
+  const longestStreak = computed(() =>
+    computeLongestStreak(checkins.value.map((c) => c.date))
+  )
 
   /**
    * 刷新今日打卡缓存

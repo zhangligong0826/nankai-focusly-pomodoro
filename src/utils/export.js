@@ -1,13 +1,14 @@
 /**
  * 数据导出工具（P1-8）
  * @module utils/export
- * @description JSON / CSV 导出，使用 Blob + URL.createObjectURL 下载
+ * @description JSON / CSV 导出，使用 Blob + URL.createObjectURL 下载；
+ *   纯数据逻辑（载荷收集 / CSV 生成）抽离至 exportCore.js 便于测试
  */
 
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
-import { LS_KEY } from '@/utils/constants'
-import { getTodayStr, getMonthStr } from '@/utils/date'
+import { getTodayStr } from '@/utils/date'
+import { buildExportPayload, buildCheckinCSV } from './exportCore'
 
 /**
  * 触发浏览器下载
@@ -29,35 +30,6 @@ function download(filename, content, mime = 'text/plain') {
 }
 
 /**
- * 收集导出数据
- * @param {'all'|'month'} range
- * @returns {object}
- */
-function collectData(range = 'all') {
-  const storage = useLocalStorage()
-  const tasks = storage.getItem(LS_KEY.TASKS, [])
-  let checkins = storage.getItem(LS_KEY.CHECKINS, [])
-  const sessions = storage.getItem(LS_KEY.SESSIONS, [])
-  const settings = storage.getItem(LS_KEY.SETTINGS, {})
-  const timerConfig = storage.getItem(LS_KEY.TIMER_CONFIG, {})
-
-  if (range === 'month') {
-    const month = getMonthStr()
-    checkins = checkins.filter((c) => c.date && c.date.startsWith(month))
-  }
-
-  return {
-    exportedAt: new Date().toISOString(),
-    range,
-    timerConfig,
-    settings,
-    tasks,
-    checkins,
-    sessions,
-  }
-}
-
-/**
  * 导出为 JSON 文件
  * @param {'all'|'month'} [range='all']
  * @returns {boolean} 是否成功
@@ -65,7 +37,8 @@ function collectData(range = 'all') {
 export function exportJSON(range = 'all') {
   try {
     showToast('正在生成 JSON...', 'info', 1200)
-    const data = collectData(range)
+    const storage = useLocalStorage()
+    const data = buildExportPayload((key, def) => storage.getItem(key, def), range)
     const json = JSON.stringify(data, null, 2)
     const date = getTodayStr()
     download(`focusly_export_${date}.json`, json, 'application/json')
@@ -86,16 +59,9 @@ export function exportJSON(range = 'all') {
 export function exportCSV(range = 'all') {
   try {
     showToast('正在生成 CSV...', 'info', 1200)
-    const { checkins } = collectData(range)
-    const header = ['date', 'pomodoroCount', 'totalMinutes']
-    const rows = checkins
-      .slice()
-      .sort((a, b) => (a.date < b.date ? -1 : 1))
-      .map((c) => [c.date, c.pomodoroCount, c.totalMinutes])
-    // CSV 转义（简单处理：含逗号则加引号）
-    const csv = [header, ...rows]
-      .map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
-      .join('\n')
+    const storage = useLocalStorage()
+    const { checkins } = buildExportPayload((key, def) => storage.getItem(key, def), range)
+    const csv = buildCheckinCSV(checkins)
     // 加 BOM 以便 Excel 正确识别 UTF-8
     const bom = '\uFEFF'
     const date = getTodayStr()
