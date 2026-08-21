@@ -15,6 +15,7 @@ import {
   DEFAULT_TIMER_CONFIG,
   DEFAULT_SETTINGS,
   THEME,
+  FOCUS_LOCK_MODE,
 } from '@/utils/constants'
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -27,16 +28,38 @@ export const useSettingsStore = defineStore('settings', () => {
   /** 是否已初始化 */
   const inited = ref(false)
 
-  /** 是否深色模式 */
-  const isDark = computed(() => settings.value.theme === THEME.DARK)
+  /** 系统是否偏好深色 */
+  const systemPrefersDark = () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  /** 是否深色模式（system 时跟随系统） */
+  const isDark = computed(() => {
+    if (settings.value.theme === THEME.SYSTEM) return systemPrefersDark()
+    return settings.value.theme === THEME.DARK
+  })
 
   /**
    * 应用主题到 DOM
    */
   function applyTheme() {
     if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', settings.value.theme)
+      const theme = settings.value.theme
+      const effective = theme === THEME.SYSTEM
+        ? (systemPrefersDark() ? THEME.DARK : THEME.LIGHT)
+        : theme
+      document.documentElement.setAttribute('data-theme', effective)
     }
+  }
+
+  // 系统主题变化时，若当前为 system 模式则自动跟随
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', () => {
+        if (settings.value.theme === THEME.SYSTEM) applyTheme()
+      })
   }
 
   /**
@@ -50,14 +73,22 @@ export const useSettingsStore = defineStore('settings', () => {
     }
     if (lsSettings && typeof lsSettings === 'object') {
       settings.value = { ...DEFAULT_SETTINGS, ...lsSettings }
+      // 兼容旧版：whiteNoise 单字符串 → 数组（P1-5 多场景混音）
+      if (typeof settings.value.whiteNoise === 'string') {
+        const v = settings.value.whiteNoise
+        settings.value.whiteNoise =
+          v && v !== 'none' && v !== 'silence' ? [v] : []
+      }
+      // 兼容旧版：focusLock 布尔 → 三态（P1-6 锁机分级）
+      if (typeof settings.value.focusLock === 'boolean') {
+        settings.value.focusLock = settings.value.focusLock
+          ? FOCUS_LOCK_MODE.SOFT
+          : FOCUS_LOCK_MODE.OFF
+      }
     }
     // 首次进入跟随系统主题
     if (!lsSettings) {
-      const prefersDark =
-        typeof window !== 'undefined' &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-      settings.value.theme = prefersDark ? THEME.DARK : THEME.LIGHT
+      settings.value.theme = THEME.SYSTEM
     }
     applyTheme()
 
@@ -114,13 +145,21 @@ export const useSettingsStore = defineStore('settings', () => {
 
   /** 切换深色/浅色模式 */
   function toggleTheme() {
-    const next = settings.value.theme === THEME.DARK ? THEME.LIGHT : THEME.DARK
+    const next = isDark.value ? THEME.LIGHT : THEME.DARK
     updateSettings({ theme: next })
   }
 
-  /** 设置白噪音类型 */
-  function setWhiteNoise(type) {
-    updateSettings({ whiteNoise: type })
+  /** 设置主题模式（light / dark / system） */
+  function setTheme(theme) {
+    if (Object.values(THEME).includes(theme)) {
+      updateSettings({ theme })
+    }
+  }
+
+  /** 设置白噪音场景（多选数组） */
+  function setWhiteNoise(types) {
+    const list = Array.isArray(types) ? types : [types]
+    updateSettings({ whiteNoise: list })
   }
 
   /** 设置每日目标 */
@@ -129,9 +168,11 @@ export const useSettingsStore = defineStore('settings', () => {
     updateSettings({ dailyGoal: v })
   }
 
-  /** 切换专注锁定 */
-  function toggleFocusLock() {
-    updateSettings({ focusLock: !settings.value.focusLock })
+  /** 设置专注锁定级别（off/soft/hard） */
+  function setFocusLockMode(mode) {
+    if (Object.values(FOCUS_LOCK_MODE).includes(mode)) {
+      updateSettings({ focusLock: mode })
+    }
   }
 
   return {
@@ -144,9 +185,10 @@ export const useSettingsStore = defineStore('settings', () => {
     updateConfig,
     updateSettings,
     toggleTheme,
+    setTheme,
     setWhiteNoise,
     setDailyGoal,
-    toggleFocusLock,
+    setFocusLockMode,
   }
 })
 

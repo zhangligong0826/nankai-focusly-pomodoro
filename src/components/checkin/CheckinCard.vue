@@ -30,10 +30,10 @@ const streak = computed(() => checkinStore.streak)
       <template v-if="checked">
         <div class="checkin-title">今日已专注</div>
         <div class="checkin-detail">
-          <strong>{{ pomodoroCount }}</strong> 个番茄 · {{ minutesToChinese(totalMinutes) }}
+          <strong class="tnum">{{ pomodoroCount }}</strong> 个番茄 · {{ minutesToChinese(totalMinutes) }}
         </div>
         <div class="checkin-streak" v-if="streak > 0">
-          🔥 连续打卡 {{ streak }} 天
+          <span aria-hidden="true">🔥</span> 连续打卡 {{ streak }} 天
         </div>
       </template>
       <template v-else>
@@ -67,7 +67,7 @@ const streak = computed(() => checkinStore.streak)
   flex-shrink: 0;
 }
 .check-circle.is-checked {
-  background-color: var(--color-success);
+  background-color: var(--color-success-text);
   color: #fff;
 }
 .empty-dot {
@@ -87,12 +87,12 @@ const streak = computed(() => checkinStore.streak)
   margin-top: var(--spacing-xs);
 }
 .checkin-detail strong {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-size: var(--font-size-xl);
 }
 .checkin-streak {
   margin-top: var(--spacing-xs);
   font-size: var(--font-size-sm);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 </style>

@@ -74,8 +74,9 @@ function toggle(field) {
   <div class="config-form">
     <div class="form-grid">
       <div class="field">
-        <label class="field-label">专注时长（分钟）</label>
+        <label class="field-label" for="cfg-focus">专注时长（分钟）</label>
         <input
+          id="cfg-focus"
           v-model.number="form.focusDuration"
           type="number"
           class="field-input"
@@ -84,8 +85,9 @@ function toggle(field) {
         />
       </div>
       <div class="field">
-        <label class="field-label">短休时长（分钟）</label>
+        <label class="field-label" for="cfg-short">短休时长（分钟）</label>
         <input
+          id="cfg-short"
           v-model.number="form.shortBreakDuration"
           type="number"
           class="field-input"
@@ -94,8 +96,9 @@ function toggle(field) {
         />
       </div>
       <div class="field">
-        <label class="field-label">长休时长（分钟）</label>
+        <label class="field-label" for="cfg-long">长休时长（分钟）</label>
         <input
+          id="cfg-long"
           v-model.number="form.longBreakDuration"
           type="number"
           class="field-input"
@@ -104,8 +107,9 @@ function toggle(field) {
         />
       </div>
       <div class="field">
-        <label class="field-label">长休间隔（轮）</label>
+        <label class="field-label" for="cfg-interval">长休间隔（轮）</label>
         <input
+          id="cfg-interval"
           v-model.number="form.longBreakInterval"
           type="number"
           class="field-input"
@@ -122,6 +126,7 @@ function toggle(field) {
         :class="{ 'switch--on': form.soundEnabled }"
         role="switch"
         :aria-checked="form.soundEnabled"
+        aria-label="声音提醒"
         @click="toggle('soundEnabled')"
       ></button>
     </div>
@@ -132,6 +137,7 @@ function toggle(field) {
         :class="{ 'switch--on': form.notificationEnabled }"
         role="switch"
         :aria-checked="form.notificationEnabled"
+        aria-label="桌面通知"
         @click="toggle('notificationEnabled')"
       ></button>
     </div>
@@ -142,6 +148,7 @@ function toggle(field) {
         :class="{ 'switch--on': form.autoStartBreak }"
         role="switch"
         :aria-checked="form.autoStartBreak"
+        aria-label="专注结束自动开始休息"
         @click="toggle('autoStartBreak')"
       ></button>
     </div>
@@ -152,6 +159,7 @@ function toggle(field) {
         :class="{ 'switch--on': form.autoStartFocus }"
         role="switch"
         :aria-checked="form.autoStartFocus"
+        aria-label="休息结束自动开始专注"
         @click="toggle('autoStartFocus')"
       ></button>
     </div>
@@ -228,6 +236,20 @@ function toggle(field) {
 }
 .switch--on::after {
   transform: translateX(20px);
+}
+/* 触屏设备放大开关命中区 */
+@media (pointer: coarse) {
+  .switch {
+    width: 52px;
+    height: 30px;
+  }
+  .switch::after {
+    width: 26px;
+    height: 26px;
+  }
+  .switch--on::after {
+    transform: translateX(22px);
+  }
 }
 .form-actions {
   display: flex;

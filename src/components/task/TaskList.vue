@@ -60,7 +60,8 @@ const isEmpty = computed(() => tasks.value.length === 0)
 }
 .empty-create {
   padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--color-primary);
+  min-height: var(--touch-target-min);
+  background-color: var(--color-action);
   color: var(--color-text-inverse);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
@@ -68,6 +69,6 @@ const isEmpty = computed(() => tasks.value.length === 0)
   transition: background-color var(--transition-fast);
 }
 .empty-create:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-action-hover);
 }
 </style>

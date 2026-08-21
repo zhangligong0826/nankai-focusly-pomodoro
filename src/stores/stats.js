@@ -7,7 +7,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import statsApi from '@/api/stats'
-import { useLocalStorage } from '@/composables/useLocalStorage'
+import { idbGet } from '@/utils/indexedDB'
+import { computeHeatmap, computePeakHours } from '@/utils/statsAggregate'
 import {
   getWeekStart,
   getMonthStr,
@@ -18,8 +19,6 @@ import {
 import { LS_KEY } from '@/utils/constants'
 
 export const useStatsStore = defineStore('stats', () => {
-  const storage = useLocalStorage()
-
   /** 本周 7 天数据 */
   const weeklyData = ref([])
   /** 本月每日数据 */
@@ -34,13 +33,26 @@ export const useStatsStore = defineStore('stats', () => {
   })
   /** 加载状态 */
   const isLoading = ref(false)
+  /** 热力图数据（近 12 月逐日） */
+  const heatmapData = ref([])
+  /** 高效时段数据 */
+  const peakHours = ref({ buckets: [], peak: null })
 
   /**
-   * 从 LocalStorage 读取真实打卡记录
-   * @returns {object[]}
+   * 从 IndexedDB 读取真实打卡记录
+   * @returns {Promise<object[]>}
    */
-  function loadRealCheckins() {
-    const cached = storage.getItem(LS_KEY.CHECKINS, [])
+  async function loadRealCheckins() {
+    const cached = await idbGet(LS_KEY.CHECKINS, [])
+    return Array.isArray(cached) ? cached : []
+  }
+
+  /**
+   * 从 IndexedDB 读取专注会话
+   * @returns {Promise<object[]>}
+   */
+  async function loadRealSessions() {
+    const cached = await idbGet(LS_KEY.SESSIONS, [])
     return Array.isArray(cached) ? cached : []
   }
 
@@ -148,11 +160,25 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   /**
+   * 计算热力图数据（近 N 月逐日，空日填 0）—— 委托 statsAggregate 纯函数
+   */
+  function heatmapFrom(checkins) {
+    return computeHeatmap(checkins, 12)
+  }
+
+  /**
+   * 计算高效时段 —— 委托 statsAggregate 纯函数
+   */
+  function peakFrom(sessions) {
+    return computePeakHours(sessions)
+  }
+
+  /**
    * 获取累计汇总
    */
   async function fetchSummary() {
     isLoading.value = true
-    const real = computeSummary(loadRealCheckins())
+    const real = computeSummary(await loadRealCheckins())
     try {
       const apiData = await statsApi.getSummary()
       // 有真实数据则用真实，否则用 API 演示数据
@@ -172,7 +198,7 @@ export const useStatsStore = defineStore('stats', () => {
   async function fetchWeekly(weekStart) {
     isLoading.value = true
     const ws = weekStart || getWeekStart()
-    const real = computeWeekly(ws, loadRealCheckins())
+    const real = computeWeekly(ws, await loadRealCheckins())
     try {
       const apiData = await statsApi.getWeeklyStats(ws)
       const hasReal = real.some((d) => d.focusMinutes > 0)
@@ -191,13 +217,47 @@ export const useStatsStore = defineStore('stats', () => {
   async function fetchMonthly(month) {
     isLoading.value = true
     const mo = month || getMonthStr()
-    const real = computeMonthly(mo, loadRealCheckins())
+    const real = computeMonthly(mo, await loadRealCheckins())
     try {
       const apiData = await statsApi.getMonthlyStats(mo)
       const hasReal = real.some((d) => d.focusMinutes > 0)
       monthlyData.value = hasReal ? real : apiData || real
     } catch (_) {
       monthlyData.value = real
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * 获取热力图数据（近 12 月逐日）
+   */
+  async function fetchHeatmap() {
+    isLoading.value = true
+    const real = heatmapFrom(await loadRealCheckins())
+    try {
+      const apiData = await statsApi.getHeatmap?.()
+      const hasReal = real.some((d) => d[1] > 0)
+      heatmapData.value = hasReal ? real : (Array.isArray(apiData) ? apiData : real)
+    } catch (_) {
+      heatmapData.value = real
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * 获取高效时段数据
+   */
+  async function fetchPeakHours() {
+    isLoading.value = true
+    const real = peakFrom(await loadRealSessions())
+    try {
+      const apiData = await statsApi.getPeakHours?.()
+      const hasReal = real.peak !== null
+      peakHours.value = hasReal ? real : (apiData || real)
+    } catch (_) {
+      peakHours.value = real
     } finally {
       isLoading.value = false
     }
@@ -214,11 +274,15 @@ export const useStatsStore = defineStore('stats', () => {
     weeklyData,
     monthlyData,
     summary,
+    heatmapData,
+    peakHours,
     isLoading,
     init,
     fetchSummary,
     fetchWeekly,
     fetchMonthly,
+    fetchHeatmap,
+    fetchPeakHours,
   }
 })
 

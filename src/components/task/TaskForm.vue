@@ -204,7 +204,7 @@ async function onSubmit() {
     <template #footer>
       <BaseButton type="ghost" @click="emit('close')">取消</BaseButton>
       <BaseButton type="primary" :loading="submitting" @click="onSubmit">
-        {{ isEdit ? '保存' : '创建' }}
+        {{ submitting ? '保存中…' : (isEdit ? '保存' : '创建') }}
       </BaseButton>
     </template>
   </BaseModal>
@@ -236,7 +236,7 @@ async function onSubmit() {
   color: var(--color-text-secondary);
 }
 .required {
-  color: var(--color-primary);
+  color: var(--color-error);
 }
 .form-input {
   width: 100%;
@@ -252,7 +252,7 @@ async function onSubmit() {
   border-color: var(--color-primary);
 }
 .form-input.is-error {
-  border-color: var(--color-primary);
+  border-color: var(--color-error);
 }
 .form-textarea {
   resize: vertical;
@@ -260,7 +260,7 @@ async function onSubmit() {
 }
 .form-error {
   font-size: var(--font-size-xs);
-  color: var(--color-primary);
+  color: var(--color-error);
 }
 @media (max-width: 480px) {
   .form-row--2col {

@@ -27,12 +27,12 @@ const selectedId = computed({
 
 <template>
   <div class="task-selector">
-    <label class="selector-label">当前任务</label>
+    <label class="selector-label" for="current-task-select">当前任务</label>
     <select
+      id="current-task-select"
       v-model="selectedId"
       class="selector-select"
       :disabled="isLocked"
-      aria-label="选择当前任务"
     >
       <option :value="null">不绑定任务</option>
       <option v-for="t in selectableTasks" :key="t.id" :value="t.id">

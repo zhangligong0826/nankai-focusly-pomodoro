@@ -49,7 +49,8 @@ const emit = defineEmits(['action'])
 }
 .empty-btn {
   padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--color-primary);
+  min-height: var(--touch-target-min);
+  background-color: var(--color-action);
   color: var(--color-text-inverse);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
@@ -57,6 +58,6 @@ const emit = defineEmits(['action'])
   transition: background-color var(--transition-fast);
 }
 .empty-btn:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-action-hover);
 }
 </style>

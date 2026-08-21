@@ -22,6 +22,7 @@ export function buildExportPayload(getItem, range = 'all', now = new Date()) {
   const sessions = getItem(LS_KEY.SESSIONS, [])
   const settings = getItem(LS_KEY.SETTINGS, {})
   const timerConfig = getItem(LS_KEY.TIMER_CONFIG, {})
+  const garden = getItem(LS_KEY.GARDEN, null)
 
   if (range === 'month') {
     const month = getMonthStr(now)
@@ -39,6 +40,7 @@ export function buildExportPayload(getItem, range = 'all', now = new Date()) {
     tasks,
     checkins,
     sessions,
+    garden,
   }
 }
 

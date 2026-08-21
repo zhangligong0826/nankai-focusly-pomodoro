@@ -1,79 +1,80 @@
 /**
- * 深色模式开关（P1-9）
+ * 主题模式选择（P1-9）
  * @module components/settings/ThemeToggle
- * @description 切换时 settingsStore.toggleTheme → document data-theme
+ * @description 浅色 / 深色 / 跟随系统 三态切换；system 模式监听 prefers-color-scheme
  */
 <script setup>
 import { computed } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
+import { THEME } from '@/utils/constants'
 
 const settingsStore = useSettingsStore()
-const isDark = computed(() => settingsStore.isDark)
+const current = computed(() => settingsStore.settings.theme)
 
-function toggle() {
-  settingsStore.toggleTheme()
+const options = [
+  { value: THEME.LIGHT, label: '浅色', icon: '☀️' },
+  { value: THEME.DARK, label: '深色', icon: '🌙' },
+  { value: THEME.SYSTEM, label: '跟随系统', icon: '🖥' },
+]
+
+function select(value) {
+  settingsStore.setTheme(value)
 }
 </script>
 
 <template>
-  <button
-    class="theme-toggle"
-    :class="{ 'is-dark': isDark }"
-    role="switch"
-    :aria-checked="isDark"
-    @click="toggle"
-  >
-    <span class="toggle-track">
-      <span class="toggle-thumb">
-        <span class="toggle-icon">{{ isDark ? '🌙' : '☀️' }}</span>
-      </span>
-    </span>
-    <span class="toggle-label">{{ isDark ? '深色' : '浅色' }}</span>
-  </button>
+  <div class="theme-toggle" role="radiogroup" aria-label="主题模式">
+    <button
+      v-for="opt in options"
+      :key="opt.value"
+      class="theme-option"
+      :class="{ 'theme-option--active': current === opt.value }"
+      role="radio"
+      :aria-checked="current === opt.value"
+      @click="select(opt.value)"
+    >
+      <span class="theme-icon" aria-hidden="true">{{ opt.icon }}</span>
+      <span class="theme-text">{{ opt.label }}</span>
+    </button>
+  </div>
 </template>
 
 <style scoped>
 .theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  cursor: pointer;
-}
-.toggle-track {
-  width: 48px;
-  height: 26px;
-  border-radius: var(--radius-full);
+  display: flex;
+  gap: var(--spacing-xs);
   background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  position: relative;
-  transition: background-color var(--transition-base);
+  padding: 4px;
+  border-radius: var(--radius-md);
 }
-.theme-toggle.is-dark .toggle-track {
-  background-color: var(--color-primary);
-}
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: var(--color-bg);
-  box-shadow: var(--shadow-sm);
+.theme-option {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: transform var(--transition-base);
-}
-.theme-toggle.is-dark .toggle-thumb {
-  transform: translateX(22px);
-}
-.toggle-icon {
-  font-size: 11px;
-  line-height: 1;
-}
-.toggle-label {
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-12);
+  min-height: 36px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+.theme-option:hover {
+  color: var(--color-text);
+}
+.theme-option--active {
+  background-color: var(--color-bg);
+  color: var(--color-primary-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+/* 触屏设备放大命中区 */
+@media (pointer: coarse) {
+  .theme-option {
+    min-height: var(--touch-target-min);
+  }
 }
 </style>

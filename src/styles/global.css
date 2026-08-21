@@ -9,7 +9,8 @@
 
 html,
 body {
-  background-color: var(--color-bg);
+  /* 页面用次级底色，让白色卡片浮起，形成清晰的内容层级 */
+  background-color: var(--color-bg-secondary);
   color: var(--color-text);
   transition: background-color var(--transition-base), color var(--transition-base);
 }
@@ -44,7 +45,7 @@ body {
   padding: var(--spacing-lg);
 }
 
-/* ===== 文本辅助 ===== */
+/* ===== 文本辅助（全部 AA 达标色） ===== */
 .text-secondary {
   color: var(--color-text-secondary);
 }
@@ -52,17 +53,36 @@ body {
   color: var(--color-text-tertiary);
 }
 .text-primary {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 .text-success {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 .text-warning {
-  color: var(--color-warning);
+  color: var(--color-warning-text);
+}
+.text-error {
+  color: var(--color-error);
 }
 
 .text-center {
   text-align: center;
+}
+
+/* ===== 数字排版：等宽数字，避免跳变抖动 ===== */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== 原生下拉箭头（appearance:none 后补回可展开指示） ===== */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+:root[data-theme='dark'] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9aab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* ===== 滚动条美化 ===== */
@@ -156,7 +176,7 @@ body {
   left: var(--spacing-md);
   z-index: calc(var(--z-modal) + 1);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--color-primary);
+  background-color: var(--color-action);
   color: var(--color-text-inverse);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   font-size: var(--font-size-sm);
@@ -178,4 +198,16 @@ kbd {
   font-family: var(--font-family);
   font-size: var(--font-size-xs);
   color: var(--color-text);
+}
+
+/* ===== 减弱动效偏好：尊重前庭敏感用户（WCAG 2.3.3） ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

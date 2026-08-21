@@ -36,10 +36,10 @@ const goal = computed(() => settingsStore.settings.dailyGoal)
       <div class="confetti-layer" aria-hidden="true">
         <span v-for="n in 24" :key="n" class="confetti" :style="{ '--i': n }"></span>
       </div>
-      <div class="celebration-emoji">🎉</div>
+      <div class="celebration-emoji" aria-hidden="true">🎉</div>
       <h2 class="celebration-title">太棒了！今日目标达成</h2>
       <p class="celebration-desc">
-        今日已完成 {{ checkinStore.todayPomodoroCount }} 个番茄，达成目标 {{ goal.value }} 个 🍅
+        今日已完成 {{ checkinStore.todayPomodoroCount }} 个番茄，达成目标 {{ goal.value }} 个
       </p>
       <p class="celebration-streak" v-if="checkinStore.streak > 1">
         已连续打卡 {{ checkinStore.streak }} 天，保持下去！
@@ -64,7 +64,7 @@ const goal = computed(() => settingsStore.settings.dailyGoal)
 .celebration-title {
   font-size: var(--font-size-xl);
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   margin-bottom: var(--spacing-sm);
 }
 .celebration-desc {
@@ -75,7 +75,7 @@ const goal = computed(() => settingsStore.settings.dailyGoal)
 .celebration-streak {
   margin-top: var(--spacing-sm);
   font-size: var(--font-size-sm);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 .confetti-layer {
   position: absolute;

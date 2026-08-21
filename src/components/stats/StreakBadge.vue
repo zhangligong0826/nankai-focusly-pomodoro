@@ -76,7 +76,7 @@ const flameLevel = computed(() => {
   color: var(--color-text);
 }
 .streak-count strong {
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   font-size: var(--font-size-2xl);
 }
 .streak-encouragement {

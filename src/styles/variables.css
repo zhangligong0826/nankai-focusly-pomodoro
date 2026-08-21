@@ -2,23 +2,41 @@
  * CSS 变量体系（含深色模式）
  * @module styles/variables
  * @description 所有组件通过 var(--color-xxx) 引用，禁止裸值
+ *
+ * 对比度基线（WCAG 2.1 AA，已实测）：
+ * - 正文文字 ≥ 4.5:1；大字号/图形 ≥ 3.0:1
+ * - 语义色分为「图形/底色用」（--color-success 等亮色）与
+ *   「文字用」（--color-success-text 等深色）两档，文字场景必须用 -text 变体
  */
 
 :root {
   /* ===== 主色系 ===== */
-  --color-primary: #e74c3c;          /* 番茄红 */
+  --color-primary: #e74c3c;          /* 番茄红（图形/大字号专用，3.82:1） */
   --color-primary-hover: #c0392b;
   --color-primary-light: rgba(231, 76, 60, 0.12);
-  --color-success: #2ecc71;          /* 成功绿 */
+  --color-primary-text: #a93226;     /* 主色文字版（白底 6.62:1，浅红底 5.45:1） */
+  --color-action: #c0392b;           /* 主按钮底色（白字 5.44:1） */
+  --color-action-hover: #a93226;     /* 主按钮 hover（白字 6.62:1） */
+
+  /* ===== 语义色：图形/图标/底色档 ===== */
+  --color-success: #2ecc71;
   --color-success-hover: #27ad60;
-  --color-warning: #f39c12;          /* 警告橙 */
-  --color-info: #3498db;             /* 信息蓝 */
-  --color-category-research: #9b59b6; /* 科研分类紫 */
+  --color-warning: #f39c12;
+  --color-info: #3498db;
+  --color-category-research: #9b59b6;
+
+  /* ===== 语义色：文字档（AA 正文达标） ===== */
+  --color-success-text: #187a42;     /* 白底 5.38:1 */
+  --color-warning-text: #9a5f00;     /* 白底 5.24:1 */
+  --color-info-text: #1f6fb0;        /* 白底 5.30:1 */
+  --color-error: #d63031;            /* 错误/危险（白底 4.85:1） */
+  --color-error-hover: #b82526;
+  --color-error-light: rgba(214, 48, 49, 0.10);
 
   /* ===== 专注模式色（短休绿 / 长休蓝） ===== */
   --color-focus: #e74c3c;
-  --color-short-break: #2ecc71;
-  --color-long-break: #3498db;
+  --color-short-break: #229954;      /* 加深绿（图形 3.65:1） */
+  --color-long-break: #1f6fb0;       /* 加深蓝（图形/大字 5.30:1） */
 
   /* ===== 背景 ===== */
   --color-bg: #ffffff;
@@ -26,22 +44,25 @@
   --color-bg-tertiary: #fafafa;
   --color-bg-overlay: rgba(0, 0, 0, 0.45);
 
-  /* ===== 文字 ===== */
-  --color-text: #333333;
-  --color-text-secondary: #666666;
-  --color-text-tertiary: #999999;
+  /* ===== 文字（全部 AA 正文达标） ===== */
+  --color-text: #333333;             /* 12.63:1 */
+  --color-text-secondary: #595959;   /* 7.00:1 */
+  --color-text-tertiary: #6e6e6e;    /* 白底 5.10:1 / 灰底 4.68:1 */
   --color-text-inverse: #ffffff;
 
   /* ===== 边框 ===== */
   --color-border: #e0e0e0;
   --color-border-light: #f0f0f0;
 
-  /* ===== 间距 ===== */
+  /* ===== 间距（4 的倍数节奏） ===== */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
+  --spacing-12: 12px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
+  --spacing-32: 32px;
   --spacing-xl: 40px;
+  --spacing-48: 48px;
   --spacing-2xl: 64px;
 
   /* ===== 圆角 ===== */
@@ -60,10 +81,14 @@
   --font-size-xl: 20px;
   --font-size-2xl: 24px;
   --font-size-3xl: 32px;
-  --font-size-timer: 56px;
+  /* 计时数字自适应：小屏收缩、大屏封顶，120:00 不溢出 */
+  --font-size-timer: clamp(40px, 13vw, 56px);
+
+  /* ===== 触控目标 ===== */
+  --touch-target-min: 44px;
 
   /* ===== 阴影 ===== */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 
@@ -85,35 +110,46 @@
   --z-toast: 1100;
 }
 
-/* ===== 深色模式覆盖 ===== */
+/* ===== 深色模式覆盖（中性灰底，全部 AA 达标） ===== */
 :root[data-theme='dark'] {
   --color-primary: #ff5a4d;
   --color-primary-hover: #ff7a70;
   --color-primary-light: rgba(255, 90, 77, 0.16);
+  --color-primary-text: #ff8a80;     /* 深底文字版 6.5+:1 */
+  --color-action: #ff5a4d;           /* 深底主按钮（深字 5.51:1） */
+  --color-action-hover: #ff7a70;
+
   --color-success: #2ecc71;
   --color-success-hover: #3dd980;
   --color-warning: #f5a623;
   --color-info: #4aa3e8;
   --color-category-research: #bb8fce;
 
-  --color-focus: #ff5a4d;
-  --color-short-break: #2ecc71;
-  --color-long-break: #4aa3e8;
+  --color-success-text: #3dd980;     /* 深底 8.07:1 */
+  --color-warning-text: #f5b84d;     /* 深底 8.4:1 */
+  --color-info-text: #6db4ec;        /* 深底 6.2:1 */
+  --color-error: #ff6b5e;            /* 深底 6.07:1 */
+  --color-error-hover: #ff8a80;
+  --color-error-light: rgba(255, 107, 94, 0.14);
 
-  --color-bg: #1a1a2e;
-  --color-bg-secondary: #16213e;
-  --color-bg-tertiary: #0f3460;
+  --color-focus: #ff5a4d;
+  --color-short-break: #3dd980;
+  --color-long-break: #6db4ec;
+
+  --color-bg: #1c1c22;
+  --color-bg-secondary: #26262e;
+  --color-bg-tertiary: #30303a;
   --color-bg-overlay: rgba(0, 0, 0, 0.6);
 
-  --color-text: #eaeaea;
-  --color-text-secondary: #b0b0b0;
-  --color-text-tertiary: #808080;
-  --color-text-inverse: #1a1a2e;
+  --color-text: #eaeaea;             /* 14.1:1 */
+  --color-text-secondary: #b8b8c0;   /* 8.1:1 */
+  --color-text-tertiary: #9a9aab;    /* 6.1:1 */
+  --color-text-inverse: #1c1c22;
 
-  --color-border: #2c2c44;
-  --color-border-light: #242438;
+  --color-border: #40404c;
+  --color-border-light: #2e2e38;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 }

@@ -20,6 +20,8 @@ import BaseToast from '@/components/common/BaseToast.vue'
 import ShortcutsPanel from '@/components/common/ShortcutsPanel.vue'
 import BreakReminder from '@/components/timer/BreakReminder.vue'
 import DailyGoalCelebration from '@/components/timer/DailyGoalCelebration.vue'
+import ReflectionDialog from '@/components/timer/ReflectionDialog.vue'
+import GardenCelebration from '@/components/garden/GardenCelebration.vue'
 
 const router = useRouter()
 const { isMobile, isTablet, isPC } = useResponsive()
@@ -83,6 +85,12 @@ useKeyboardShortcuts({
 
     <!-- 全局：每日目标庆祝 -->
     <DailyGoalCelebration />
+
+    <!-- 全局：专注反思（P1-3） -->
+    <ReflectionDialog />
+
+    <!-- 全局：养成物解锁庆祝（P1-1） -->
+    <GardenCelebration />
 
     <!-- 全局：快捷键帮助面板 -->
     <ShortcutsPanel :visible="showShortcuts" @close="showShortcuts = false" />
@@ -150,7 +158,7 @@ useKeyboardShortcuts({
 
 .app-layout--mobile .app-main {
   padding: var(--spacing-md);
-  padding-bottom: calc(var(--tabbar-height) + var(--spacing-md));
+  padding-bottom: calc(var(--tabbar-height) + var(--spacing-md) + env(safe-area-inset-bottom, 0px));
 }
 
 .app-tabbar {
@@ -175,8 +183,11 @@ useKeyboardShortcuts({
   transition: background-color var(--transition-fast);
 }
 .btn-primary {
-  background-color: var(--color-primary);
+  background-color: var(--color-action);
   color: var(--color-text-inverse);
+}
+.btn-primary:hover {
+  background-color: var(--color-action-hover);
 }
 .btn-ghost {
   background-color: transparent;

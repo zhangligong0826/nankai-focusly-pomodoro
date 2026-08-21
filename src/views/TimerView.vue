@@ -11,6 +11,8 @@ import TimerDisplay from '@/components/timer/TimerDisplay.vue'
 import TimerControls from '@/components/timer/TimerControls.vue'
 import TaskSelector from '@/components/timer/TaskSelector.vue'
 import CheckinCard from '@/components/checkin/CheckinCard.vue'
+import DailyQuote from '@/components/timer/DailyQuote.vue'
+import GardenMiniCard from '@/components/garden/GardenMiniCard.vue'
 
 const notify = useNotification()
 
@@ -37,7 +39,9 @@ onMounted(() => {
       </div>
     </div>
 
+    <DailyQuote />
     <CheckinCard class="checkin-area" />
+    <GardenMiniCard />
   </div>
 </template>
 

@@ -11,7 +11,9 @@ import TaskList from '@/components/task/TaskList.vue'
 import TaskGroup from '@/components/task/TaskGroup.vue'
 import TaskForm from '@/components/task/TaskForm.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import emptyTaskSvg from '@/assets/images/empty-task.svg'
 
 const taskStore = useTaskStore()
 
@@ -71,9 +73,13 @@ function toggleView() {
           @edit="openEdit"
           @delete="confirmDelete"
         />
-        <p v-if="groups.length === 0" class="empty-text text-tertiary">
-          还没有任务，点击 + 新建第一个吧
-        </p>
+        <EmptyState
+          v-if="groups.length === 0"
+          :image="emptyTaskSvg"
+          text="还没有任务，点击 + 新建第一个吧"
+          action-text="+ 新建任务"
+          @action="openCreate"
+        />
       </template>
       <template v-else>
         <TaskList
@@ -128,6 +134,7 @@ function toggleView() {
 }
 .view-toggle {
   padding: var(--spacing-xs) var(--spacing-md);
+  min-height: 36px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
@@ -137,13 +144,15 @@ function toggleView() {
 }
 .view-toggle:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+/* 触屏设备放大命中区 */
+@media (pointer: coarse) {
+  .view-toggle {
+    min-height: var(--touch-target-min);
+  }
 }
 .task-content {
   min-height: 200px;
-}
-.empty-text {
-  text-align: center;
-  padding: var(--spacing-2xl) 0;
 }
 </style>

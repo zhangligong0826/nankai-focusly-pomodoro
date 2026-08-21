@@ -10,11 +10,13 @@ import { PieChart } from 'echarts/charts'
 import { TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useTaskStore } from '@/stores/task'
+import { useSettingsStore } from '@/stores/settings'
 import { CATEGORY_META, TASK_CATEGORY } from '@/utils/constants'
 
 echarts.use([PieChart, TooltipComponent, LegendComponent, CanvasRenderer])
 
 const taskStore = useTaskStore()
+const settingsStore = useSettingsStore()
 const chartRef = ref(null)
 let chart = null
 
@@ -115,6 +117,12 @@ watch(
   { deep: true }
 )
 
+// 主题切换后图例/描边颜色需重取
+watch(
+  () => settingsStore.isDark,
+  () => nextTick(render)
+)
+
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
   if (chart) {
@@ -126,7 +134,12 @@ onUnmounted(() => {
 
 <template>
   <div class="chart-wrapper card">
-    <div ref="chartRef" class="chart-canvas"></div>
+    <div
+      ref="chartRef"
+      class="chart-canvas"
+      role="img"
+      aria-label="任务分类番茄数占比饼图"
+    ></div>
     <p v-if="!taskStore.tasks.length" class="chart-empty text-tertiary">
       暂无任务数据，完成番茄后这里会展示分类占比
     </p>

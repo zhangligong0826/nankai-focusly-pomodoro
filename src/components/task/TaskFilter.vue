@@ -18,12 +18,14 @@ const tabs = [
 </script>
 
 <template>
-  <div class="task-filter">
+  <div class="task-filter" role="tablist" aria-label="任务状态筛选">
     <button
       v-for="t in tabs"
       :key="t.key"
       class="filter-tab"
       :class="{ 'filter-tab--active': taskStore.filter === t.key }"
+      role="tab"
+      :aria-selected="taskStore.filter === t.key"
       @click="taskStore.setFilter(t.key)"
     >
       {{ t.label }}
@@ -41,7 +43,8 @@ const tabs = [
   width: fit-content;
 }
 .filter-tab {
-  padding: 6px 16px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: 36px;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -52,8 +55,14 @@ const tabs = [
 }
 .filter-tab--active {
   background-color: var(--color-bg);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 600;
   box-shadow: var(--shadow-sm);
+}
+/* 触屏设备放大命中区 */
+@media (pointer: coarse) {
+  .filter-tab {
+    min-height: var(--touch-target-min);
+  }
 }
 </style>

@@ -12,6 +12,9 @@ import WeeklyChart from '@/components/stats/WeeklyChart.vue'
 import MonthlyChart from '@/components/stats/MonthlyChart.vue'
 import CategoryPieChart from '@/components/stats/CategoryPieChart.vue'
 import StreakBadge from '@/components/stats/StreakBadge.vue'
+import GardenCard from '@/components/garden/GardenCard.vue'
+import HeatmapChart from '@/components/stats/HeatmapChart.vue'
+import PeakHoursChart from '@/components/stats/PeakHoursChart.vue'
 
 const statsStore = useStatsStore()
 const checkinStore = useCheckinStore()
@@ -22,6 +25,10 @@ function switchTab(tab) {
   activeTab.value = tab
   if (tab === 'weekly') statsStore.fetchWeekly()
   else if (tab === 'monthly') statsStore.fetchMonthly()
+  else if (tab === 'heatmap') {
+    statsStore.fetchHeatmap()
+    statsStore.fetchPeakHours()
+  }
   // category 不依赖 statsStore，由 CategoryPieChart 自行读取 taskStore
 }
 
@@ -49,10 +56,12 @@ watch(
 
     <StatsSummary />
 
-    <div class="chart-tabs">
+    <div class="chart-tabs" role="tablist" aria-label="统计图表切换">
       <button
         class="chart-tab"
         :class="{ 'chart-tab--active': activeTab === 'weekly' }"
+        role="tab"
+        :aria-selected="activeTab === 'weekly'"
         @click="switchTab('weekly')"
       >
         本周
@@ -60,6 +69,8 @@ watch(
       <button
         class="chart-tab"
         :class="{ 'chart-tab--active': activeTab === 'monthly' }"
+        role="tab"
+        :aria-selected="activeTab === 'monthly'"
         @click="switchTab('monthly')"
       >
         本月
@@ -67,9 +78,20 @@ watch(
       <button
         class="chart-tab"
         :class="{ 'chart-tab--active': activeTab === 'category' }"
+        role="tab"
+        :aria-selected="activeTab === 'category'"
         @click="switchTab('category')"
       >
         分类占比
+      </button>
+      <button
+        class="chart-tab"
+        :class="{ 'chart-tab--active': activeTab === 'heatmap' }"
+        role="tab"
+        :aria-selected="activeTab === 'heatmap'"
+        @click="switchTab('heatmap')"
+      >
+        热力图
       </button>
     </div>
 
@@ -83,9 +105,15 @@ watch(
       :data="statsStore.monthlyData"
       :loading="statsStore.isLoading"
     />
-    <CategoryPieChart v-else />
+    <CategoryPieChart v-else-if="activeTab === 'category'" />
+    <template v-else>
+      <HeatmapChart />
+      <PeakHoursChart />
+    </template>
 
     <StreakBadge />
+
+    <GardenCard />
   </div>
 </template>
 
@@ -111,7 +139,8 @@ watch(
   width: fit-content;
 }
 .chart-tab {
-  padding: 6px 20px;
+  padding: var(--spacing-sm) 20px;
+  min-height: 36px;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -119,8 +148,14 @@ watch(
 }
 .chart-tab--active {
   background-color: var(--color-bg);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 600;
   box-shadow: var(--shadow-sm);
+}
+/* 触屏设备放大命中区 */
+@media (pointer: coarse) {
+  .chart-tab {
+    min-height: var(--touch-target-min);
+  }
 }
 </style>

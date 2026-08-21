@@ -11,7 +11,7 @@ import ThemeToggle from './ThemeToggle.vue'
 import WhiteNoisePlayer from './WhiteNoisePlayer.vue'
 import DataExportPanel from './DataExportPanel.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import { LIMITS } from '@/utils/constants'
+import { LIMITS, FOCUS_LOCK_MODE } from '@/utils/constants'
 
 const settingsStore = useSettingsStore()
 const config = computed(() => settingsStore.config)
@@ -22,8 +22,13 @@ const dailyGoal = computed({
 })
 
 const focusLock = computed(() => settingsStore.settings.focusLock)
-function toggleFocusLock() {
-  settingsStore.toggleFocusLock()
+const lockOptions = [
+  { value: FOCUS_LOCK_MODE.OFF, label: '关闭' },
+  { value: FOCUS_LOCK_MODE.SOFT, label: '软提醒' },
+  { value: FOCUS_LOCK_MODE.HARD, label: '强锁' },
+]
+function setFocusLock(mode) {
+  settingsStore.setFocusLockMode(mode)
 }
 
 /** 全局快捷键清单（与 useKeyboardShortcuts / useFocusLock 保持一致） */
@@ -52,16 +57,24 @@ const shortcuts = [
         <ThemeToggle />
       </div>
       <div class="section-row">
-        <span class="row-label">专注锁定</span>
-        <button
-          class="switch"
-          :class="{ 'switch--on': focusLock }"
-          role="switch"
-          :aria-checked="focusLock"
-          @click="toggleFocusLock"
-        ></button>
+        <span class="row-label" id="focus-lock-label">专注锁定</span>
+        <div class="lock-selector" role="radiogroup" aria-labelledby="focus-lock-label">
+          <button
+            v-for="opt in lockOptions"
+            :key="opt.value"
+            class="lock-option"
+            :class="{ 'lock-option--active': focusLock === opt.value }"
+            role="radio"
+            :aria-checked="focusLock === opt.value"
+            @click="setFocusLock(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
       </div>
-      <p class="row-tip text-tertiary">开启后专注期间切走页面会弹出警告（Ctrl/Cmd+P 可紧急暂停）</p>
+      <p class="row-tip text-tertiary">
+        软提醒：切走页面弹警告；强锁：切走立即中止，本次专注不计入（Ctrl/Cmd+P 可紧急暂停）
+      </p>
     </section>
 
     <!-- 声音白噪音 -->
@@ -87,8 +100,9 @@ const shortcuts = [
     <section class="settings-section card">
       <h3 class="section-title">🎯 每日目标</h3>
       <div class="goal-row">
-        <label class="row-label">每日目标番茄数</label>
+        <label class="row-label" for="daily-goal-input">每日目标番茄数</label>
         <input
+          id="daily-goal-input"
           v-model.number="dailyGoal"
           type="number"
           class="goal-input"
@@ -171,30 +185,34 @@ const shortcuts = [
   color: var(--color-text);
   font-size: var(--font-size-md);
 }
-.switch {
-  width: 44px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-border);
-  position: relative;
-  transition: background-color var(--transition-base);
-  flex-shrink: 0;
+.lock-selector {
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: var(--color-bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-md);
 }
-.switch::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+.lock-option {
+  padding: var(--spacing-xs) var(--spacing-12);
+  min-height: 32px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+.lock-option:hover {
+  color: var(--color-text);
+}
+.lock-option--active {
   background-color: var(--color-bg);
-  transition: transform var(--transition-base);
+  color: var(--color-primary-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
-.switch--on {
-  background-color: var(--color-primary);
-}
-.switch--on::after {
-  transform: translateX(20px);
+/* 触屏设备放大命中区 */
+@media (pointer: coarse) {
+  .lock-option {
+    min-height: var(--touch-target-min);
+  }
 }
 </style>

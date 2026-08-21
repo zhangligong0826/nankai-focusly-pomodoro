@@ -35,7 +35,8 @@ import { NAV_ITEMS } from '@/utils/constants'
 <style scoped>
 .app-tabbar {
   display: flex;
-  height: var(--tabbar-height);
+  height: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background-color: var(--color-bg);
   border-top: 1px solid var(--color-border-light);
 }
@@ -51,7 +52,7 @@ import { NAV_ITEMS } from '@/utils/constants'
   transition: color var(--transition-fast);
 }
 .tab-item--active {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 .tab-label {
   font-size: var(--font-size-xs);

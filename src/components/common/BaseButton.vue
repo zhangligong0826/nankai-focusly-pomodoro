@@ -80,11 +80,11 @@ function onClick(e) {
   cursor: not-allowed;
 }
 .base-btn--primary {
-  background-color: var(--color-primary);
+  background-color: var(--color-action);
   color: var(--color-text-inverse);
 }
 .base-btn--primary:hover:not(.is-disabled) {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-action-hover);
 }
 .base-btn--secondary {
   background-color: var(--color-bg-secondary);
@@ -93,9 +93,14 @@ function onClick(e) {
 .base-btn--secondary:hover:not(.is-disabled) {
   background-color: var(--color-border);
 }
+/* 危险操作：描边样式，与实心主 CTA 形成形状差异（颜色不是唯一区分手段） */
 .base-btn--danger {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  background-color: transparent;
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+.base-btn--danger:hover:not(.is-disabled) {
+  background-color: var(--color-error-light);
 }
 .base-btn--ghost {
   background-color: transparent;
@@ -105,7 +110,7 @@ function onClick(e) {
   background-color: var(--color-bg-secondary);
 }
 .base-btn--success {
-  background-color: var(--color-success);
+  background-color: var(--color-success-text);
   color: var(--color-text-inverse);
 }
 .base-btn--success:hover:not(.is-disabled) {

@@ -9,7 +9,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTimerStore } from '@/stores/timer'
 import { useSettingsStore } from '@/stores/settings'
 import { showToast } from '@/composables/useToast'
-import { TIMER_MODE, TIMER_STATUS } from '@/utils/constants'
+import { TIMER_MODE, TIMER_STATUS, FOCUS_LOCK_MODE } from '@/utils/constants'
 
 /** 警告弹窗可见性（供 FocusLockWarning 组件订阅，全局单例） */
 const warningVisible = ref(false)
@@ -24,13 +24,18 @@ export function useFocusLock() {
   const isActive = ref(false)
   let locked = false
 
-  /** 是否应处于锁定态：focus 模式 + running + 开启锁定 */
+  /** 是否应处于锁定态：focus 模式 + running + 开启锁定（非 off） */
   function shouldLock() {
     return (
-      settingsStore.settings.focusLock &&
+      settingsStore.settings.focusLock !== FOCUS_LOCK_MODE.OFF &&
       timerStore.mode === TIMER_MODE.FOCUS &&
       timerStore.status === TIMER_STATUS.RUNNING
     )
+  }
+
+  /** 是否强锁 */
+  function isHardLock() {
+    return settingsStore.settings.focusLock === FOCUS_LOCK_MODE.HARD
   }
 
   function sync() {
@@ -47,9 +52,20 @@ export function useFocusLock() {
     }
   }
 
+  /** 触发锁定违规处理：强锁→abort，软提醒→弹窗 */
+  function onViolation() {
+    if (!shouldLock()) return
+    if (isHardLock()) {
+      // 强锁：离开即中止（幂等由 abort 内部 status 判断保证）
+      timerStore.abort('强锁离开')
+    } else {
+      warningVisible.value = true
+    }
+  }
+
   function onVisibilityChange() {
     if (document.hidden && shouldLock()) {
-      warningVisible.value = true
+      onViolation()
     }
   }
 
@@ -57,7 +73,7 @@ export function useFocusLock() {
     if (shouldLock()) {
       // blur 触发较敏感，延迟检测避免误报
       setTimeout(() => {
-        if (shouldLock()) warningVisible.value = true
+        if (shouldLock()) onViolation()
       }, 200)
     }
   }

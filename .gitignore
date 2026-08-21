@@ -39,3 +39,6 @@ pnpm-debug.log*
 # Vite temp files
 vite.config.js.timestamp-*
 *.timestamp-*.mjs
+
+# WorkBuddy artifacts（截图等临时产物不提交）
+.workbuddy/artifacts/screenshots/

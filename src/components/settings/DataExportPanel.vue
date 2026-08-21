@@ -9,6 +9,7 @@ import { exportJSON, exportCSV } from '@/utils/export'
 import { EXPORT_VERSION } from '@/utils/exportCore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
+import { idbSet } from '@/utils/indexedDB'
 import { useTaskStore } from '@/stores/task'
 import { useCheckinStore } from '@/stores/checkin'
 import { useSettingsStore } from '@/stores/settings'
@@ -83,9 +84,9 @@ function handleFileImport(e) {
 }
 
 /**
- * 确认导入：写入 LS + 刷新 stores
+ * 确认导入：写入存储 + 刷新 stores
  */
-function doImport() {
+async function doImport() {
   const data = pendingImport.value
   pendingImport.value = null
   if (!data) return
@@ -96,8 +97,10 @@ function doImport() {
   storage.setItem(LS_KEY.TIMER_CONFIG, timerConfig)
   storage.setItem(LS_KEY.SETTINGS, settings)
   storage.setItem(LS_KEY.TASKS, data.tasks || [])
-  storage.setItem(LS_KEY.CHECKINS, data.checkins || [])
-  if (data.sessions !== undefined) storage.setItem(LS_KEY.SESSIONS, data.sessions)
+  if (data.garden !== undefined) storage.setItem(LS_KEY.GARDEN, data.garden)
+  // 打卡/会话历史迁入 IndexedDB
+  await idbSet(LS_KEY.CHECKINS, data.checkins || [])
+  if (data.sessions !== undefined) await idbSet(LS_KEY.SESSIONS, data.sessions)
 
   // 刷新内存状态
   settingsStore.config = timerConfig

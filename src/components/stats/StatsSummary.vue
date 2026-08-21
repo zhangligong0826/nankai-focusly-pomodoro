@@ -49,9 +49,9 @@ const cards = computed(() => [
       :key="c.key"
       class="summary-card card"
     >
-      <div class="summary-icon" :style="{ color: c.color }">{{ c.icon }}</div>
+      <div class="summary-icon" :style="{ color: c.color }" aria-hidden="true">{{ c.icon }}</div>
       <div class="summary-body">
-        <div class="summary-value">{{ c.value }}</div>
+        <div class="summary-value tnum">{{ c.value }}</div>
         <div class="summary-label">{{ c.label }}</div>
       </div>
     </div>

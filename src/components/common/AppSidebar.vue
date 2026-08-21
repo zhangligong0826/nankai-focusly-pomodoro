@@ -57,7 +57,7 @@ import { NAV_ITEMS } from '@/utils/constants'
 }
 .nav-item--active {
   background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 600;
 }
 </style>

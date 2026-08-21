@@ -154,8 +154,9 @@ watch(
   color: var(--color-text);
 }
 .modal-close {
-  width: 32px;
-  height: 32px;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  margin: -6px;
   font-size: 22px;
   line-height: 1;
   color: var(--color-text-tertiary);
@@ -165,6 +166,14 @@ watch(
 .modal-close:hover {
   background-color: var(--color-bg-secondary);
   color: var(--color-text);
+}
+/* PC 端精细指针保持紧凑 */
+@media (hover: hover) and (pointer: fine) {
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+  }
 }
 .modal-body {
   padding: var(--spacing-lg);

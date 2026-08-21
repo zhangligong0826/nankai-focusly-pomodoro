@@ -7,15 +7,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import checkinApi from '@/api/checkin'
-import { useLocalStorage } from '@/composables/useLocalStorage'
 import { showToast } from '@/composables/useToast'
 import { getTodayStr } from '@/utils/date'
 import { mergeTodayCheckin, computeStreak, computeLongestStreak } from '@/utils/checkin'
+import { idbGet, idbSet } from '@/utils/indexedDB'
 import { LS_KEY } from '@/utils/constants'
 
 export const useCheckinStore = defineStore('checkin', () => {
-  const storage = useLocalStorage()
-
   /** 全部打卡记录 */
   const checkins = ref([])
   /** 今日打卡记录（null=未打卡） */
@@ -58,10 +56,10 @@ export const useCheckinStore = defineStore('checkin', () => {
   }
 
   /**
-   * 初始化：LS 优先 → API 刷新
+   * 初始化：IndexedDB 优先 → API 刷新
    */
   async function init() {
-    const cached = storage.getItem(LS_KEY.CHECKINS, [])
+    const cached = await idbGet(LS_KEY.CHECKINS, [])
     if (Array.isArray(cached)) {
       checkins.value = cached
       refreshToday()
@@ -69,7 +67,7 @@ export const useCheckinStore = defineStore('checkin', () => {
     try {
       const res = await checkinApi.getTodayCheckin()
       if (res && res.checked && !todayCheckin.value) {
-        // API 有今日数据但 LS 没有 → 同步
+        // API 有今日数据但本地没有 → 同步
         const today = getTodayStr()
         const newCheckin = {
           date: today,
@@ -79,19 +77,19 @@ export const useCheckinStore = defineStore('checkin', () => {
         }
         checkins.value.push(newCheckin)
         refreshToday()
-        storage.setItem(LS_KEY.CHECKINS, checkins.value)
+        persist()
       }
     } catch (_) {
-      /* LS 已加载 */
+      /* 本地已加载 */
     }
     inited.value = true
   }
 
   /**
-   * 持久化
+   * 持久化到 IndexedDB
    */
   function persist() {
-    storage.setItem(LS_KEY.CHECKINS, checkins.value)
+    idbSet(LS_KEY.CHECKINS, checkins.value)
   }
 
   /**

@@ -69,7 +69,7 @@ function goSettings() {
   gap: var(--spacing-sm);
   font-weight: 700;
   font-size: var(--font-size-lg);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 .logo-icon {
   font-size: var(--font-size-xl);
@@ -91,7 +91,7 @@ function goSettings() {
 }
 .checkin-status.is-checked {
   background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 .check-icon {
   font-size: var(--font-size-sm);
@@ -100,15 +100,22 @@ function goSettings() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   transition: background-color var(--transition-fast);
 }
 .settings-btn:hover {
   background-color: var(--color-bg-secondary);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+/* PC 端精细指针保持紧凑 */
+@media (hover: hover) and (pointer: fine) {
+  .settings-btn {
+    width: 36px;
+    height: 36px;
+  }
 }
 @media (max-width: 480px) {
   .check-text {

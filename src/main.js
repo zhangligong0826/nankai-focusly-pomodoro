@@ -12,11 +12,13 @@ import './styles/global.css'
 import { registerSW } from 'virtual:pwa-register'
 import { useLocalStorage } from './composables/useLocalStorage'
 import { showToast } from './composables/useToast'
+import { migrateLegacyData } from './utils/migrate'
 import { useSettingsStore } from './stores/settings'
 import { useTaskStore } from './stores/task'
 import { useCheckinStore } from './stores/checkin'
 import { useStatsStore } from './stores/stats'
 import { useTimerStore } from './stores/timer'
+import { useGardenStore } from './stores/garden'
 import { LS_KEY, THEME } from './utils/constants'
 
 // 注册 Service Worker（PWA：离线可用 + 自动更新）
@@ -52,18 +54,24 @@ document.documentElement.setAttribute('data-theme', theme)
 
 app.mount('#app')
 
-// 挂载后异步初始化各 store（API 刷新 + LS 兜底）
+// 挂载后异步初始化各 store（API 刷新 + 本地兜底）
 ;(async () => {
+  // 先迁移旧 localStorage 大块历史数据 → IndexedDB（幂等）
+  await migrateLegacyData()
+
   const settingsStore = useSettingsStore()
   await settingsStore.init()
   const taskStore = useTaskStore()
   const checkinStore = useCheckinStore()
   const statsStore = useStatsStore()
   const timerStore = useTimerStore()
+  const gardenStore = useGardenStore()
   await Promise.all([
     taskStore.init(),
     checkinStore.init(),
     statsStore.init(),
   ])
+  gardenStore.init()
+  gardenStore.reconcile()
   timerStore.init()
 })()

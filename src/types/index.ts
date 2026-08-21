@@ -26,10 +26,13 @@ export type TimerStatus = 'idle' | 'running' | 'paused'
 export type SessionType = 'focus' | 'short_break' | 'long_break'
 
 /** 主题模式 */
-export type Theme = 'light' | 'dark'
+export type Theme = 'light' | 'dark' | 'system'
 
 /** 白噪音类型 */
-export type NoiseType = 'none' | 'rain' | 'cafe' | 'silence'
+export type NoiseType = 'none' | 'rain' | 'waves' | 'forest' | 'cafe'
+
+/** 专注锁定级别 */
+export type FocusLockMode = 'off' | 'soft' | 'hard'
 
 /** 任务视图模式 */
 export type TaskViewMode = 'list' | 'group'
@@ -54,10 +57,10 @@ export interface TimerConfig {
 /** 应用设置 */
 export interface Settings {
   theme: Theme
-  whiteNoise: NoiseType
+  whiteNoise: NoiseType[]
   whiteNoiseVolume: number
   dailyGoal: number
-  focusLock: boolean
+  focusLock: FocusLockMode
 }
 
 /** 任务 */

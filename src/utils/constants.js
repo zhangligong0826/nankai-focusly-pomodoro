@@ -53,14 +53,23 @@ export const SESSION_TYPE = Object.freeze({
 export const THEME = Object.freeze({
   LIGHT: 'light',
   DARK: 'dark',
+  SYSTEM: 'system',
 })
 
-/** 白噪音类型（P1-4） */
+/** 专注锁定级别（P1-6） */
+export const FOCUS_LOCK_MODE = Object.freeze({
+  OFF: 'off',
+  SOFT: 'soft',
+  HARD: 'hard',
+})
+
+/** 白噪音类型（P1-4 增强：多场景可叠加混音） */
 export const NOISE_TYPE = Object.freeze({
   NONE: 'none',
   RAIN: 'rain',
+  WAVES: 'waves',
+  FOREST: 'forest',
   CAFE: 'cafe',
-  SILENCE: 'silence',
 })
 
 // ==================== 默认值 ====================
@@ -85,11 +94,11 @@ export const DEFAULT_TIMER_CONFIG = Object.freeze({
  * @type {import('../types').Settings}
  */
 export const DEFAULT_SETTINGS = Object.freeze({
-  theme: THEME.LIGHT,
-  whiteNoise: NOISE_TYPE.NONE,
+  theme: THEME.SYSTEM,
+  whiteNoise: [], // 白噪音场景数组（多选混音）
   whiteNoiseVolume: 0.5,
   dailyGoal: 4,
-  focusLock: false,
+  focusLock: FOCUS_LOCK_MODE.OFF,
 })
 
 // ==================== LocalStorage Key ====================
@@ -102,24 +111,26 @@ export const LS_KEY = Object.freeze({
   SETTINGS: 'focusly_settings',
   CURRENT_TASK: 'focusly_current_task',
   THEME: 'focusly_theme',
+  TIMER_STATE: 'focusly_timer_state',
   NOTIFICATION_ASKED: 'focusly_notification_asked',
   CELEBRATE_PREFIX: 'focusly_celebrated_',
+  GARDEN: 'focusly_garden',
 })
 
 // ==================== 元信息（标签 / 颜色） ====================
 
-/** 任务分类元信息：标签 + 颜色 */
+/** 任务分类元信息：标签 + 颜色（文字场景用 -text 变体保证 AA 对比度） */
 export const CATEGORY_META = Object.freeze({
-  [TASK_CATEGORY.PROFESSIONAL]: { label: '专业课', color: 'var(--color-info)' },
-  [TASK_CATEGORY.ENGLISH]: { label: '英语', color: 'var(--color-success)' },
+  [TASK_CATEGORY.PROFESSIONAL]: { label: '专业课', color: 'var(--color-info-text)' },
+  [TASK_CATEGORY.ENGLISH]: { label: '英语', color: 'var(--color-success-text)' },
   [TASK_CATEGORY.RESEARCH]: { label: '科研', color: 'var(--color-category-research)' },
   [TASK_CATEGORY.OTHER]: { label: '其他', color: 'var(--color-text-tertiary)' },
 })
 
 /** 优先级元信息：标签 + 颜色 + 权重（用于排序） */
 export const PRIORITY_META = Object.freeze({
-  [PRIORITY.HIGH]: { label: '高', color: 'var(--color-primary)', weight: 0 },
-  [PRIORITY.MEDIUM]: { label: '中', color: 'var(--color-warning)', weight: 1 },
+  [PRIORITY.HIGH]: { label: '高', color: 'var(--color-error)', weight: 0 },
+  [PRIORITY.MEDIUM]: { label: '中', color: 'var(--color-warning-text)', weight: 1 },
   [PRIORITY.LOW]: { label: '低', color: 'var(--color-text-tertiary)', weight: 2 },
 })
 
@@ -133,10 +144,43 @@ export const MODE_META = Object.freeze({
 /** 白噪音元信息：标签 + 图标标识 */
 export const NOISE_META = Object.freeze({
   [NOISE_TYPE.NONE]: { label: '关闭', icon: 'off' },
-  [NOISE_TYPE.RAIN]: { label: '雨声', icon: 'rain' },
-  [NOISE_TYPE.CAFE]: { label: '咖啡馆', icon: 'cafe' },
-  [NOISE_TYPE.SILENCE]: { label: '静音', icon: 'silence' },
+  [NOISE_TYPE.RAIN]: { label: '雨声', icon: '🌧' },
+  [NOISE_TYPE.WAVES]: { label: '海浪', icon: '🌊' },
+  [NOISE_TYPE.FOREST]: { label: '森林', icon: '🌲' },
+  [NOISE_TYPE.CAFE]: { label: '咖啡馆', icon: '☕' },
 })
+
+/** 每日专注金句（P1-5，按日期取模轮换） */
+export const DAILY_QUOTES = Object.freeze([
+  '专注是把时间变成作品的能力。',
+  '种一棵树最好的时间是十年前，其次是现在。',
+  '你不需要很厉害才能开始，但需要开始才能很厉害。',
+  '深度工作 1 小时，胜过心不在焉 3 小时。',
+  '把大目标切成小番茄，一口一口吃掉它。',
+  '今天的专注，是明天的底气。',
+  '少即是多：一次只做好一件事。',
+  '自律不是束缚，而是自由。',
+  '每一次专注，都是与未来的自己击掌。',
+  '别高估一天能做的，别低估一年能做的。',
+])
+
+// ==================== 养成物（P1-1） ====================
+
+/** 成长阶段（按累计专注分钟数阈值） */
+export const GROWTH_STAGES = Object.freeze([
+  { stage: 'seed', label: '种子', minMinutes: 0 },
+  { stage: 'sprout', label: '发芽', minMinutes: 60 },
+  { stage: 'seedling', label: '幼苗', minMinutes: 180 },
+  { stage: 'plant', label: '成株', minMinutes: 360 },
+  { stage: 'bloom', label: '开花', minMinutes: 600 },
+])
+
+/** 养成物品种（连续打卡天数解锁） */
+export const GARDEN_SPECIES = Object.freeze([
+  { id: 'sprout', name: '小绿芽', minStreak: 0 },
+  { id: 'tomato', name: '番茄苗', minStreak: 3 },
+  { id: 'sunflower', name: '向日葵', minStreak: 7 },
+])
 
 // ==================== API 码 ====================
 

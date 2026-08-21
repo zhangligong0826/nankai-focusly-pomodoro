@@ -26,8 +26,9 @@ const typeIcon = (type) => {
       :aria-live="t.type === 'error' ? 'assertive' : 'polite'"
       @click="removeToast(t.id)"
     >
-      <span class="toast-icon">{{ typeIcon(t.type) }}</span>
+      <span class="toast-icon" aria-hidden="true">{{ typeIcon(t.type) }}</span>
       <span class="toast-msg">{{ t.message }}</span>
+      <button class="toast-close" aria-label="关闭提示" @click.stop="removeToast(t.id)">×</button>
     </div>
   </TransitionGroup>
 </template>
@@ -75,7 +76,7 @@ const typeIcon = (type) => {
   background-color: var(--color-success);
 }
 .toast--error .toast-icon {
-  background-color: var(--color-primary);
+  background-color: var(--color-error);
 }
 .toast--warning .toast-icon {
   background-color: var(--color-warning);
@@ -87,13 +88,34 @@ const typeIcon = (type) => {
   border-left: 3px solid var(--color-success);
 }
 .toast--error {
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--color-error);
 }
 .toast--warning {
   border-left: 3px solid var(--color-warning);
 }
 .toast--info {
   border-left: 3px solid var(--color-info);
+}
+.toast-msg {
+  flex: 1;
+  min-width: 0;
+}
+.toast-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-text-tertiary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.toast-close:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
 }
 .toast-enter-active,
 .toast-leave-active {
