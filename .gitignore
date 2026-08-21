@@ -42,3 +42,11 @@ vite.config.js.timestamp-*
 
 # WorkBuddy artifacts（截图等临时产物不提交）
 .workbuddy/artifacts/screenshots/
+
+# Playwright
+test-results/
+playwright-report/
+
+# vite-plugin-mock 临时构建产物
+mock/*.bundled_*.mjs
+mock/__db.bundled_*.mjs

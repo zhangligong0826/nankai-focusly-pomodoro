@@ -7,7 +7,7 @@ import {
   computeYearly,
   buildPeakAdvice,
   formatDateLocal,
-} from '../src/utils/statsAggregate.js'
+} from '../src/utils/statsAggregate.ts'
 
 test('formatDateLocal 格式化为 YYYY-MM-DD', () => {
   assert.equal(formatDateLocal(new Date(2026, 7, 21)), '2026-08-21')

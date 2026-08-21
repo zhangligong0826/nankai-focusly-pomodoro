@@ -3,7 +3,7 @@
  * @module components/timer/TimerDisplay
  * @description 组合 CircularProgress + MM:SS + 模式标签 + 轮次指示；颜色随模式变化
  */
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTimerEngine } from '@/composables/useTimerEngine'
 import { useTaskStore } from '@/stores/task'
@@ -42,7 +42,7 @@ const roundDots = computed(() => {
 
 // 长按 3 秒紧急暂停（仅触摸设备；桌面端有 Ctrl/Cmd+P 快捷键与暂停按钮）
 const pressing = ref(false)
-let pressTimer = null
+let pressTimer: ReturnType<typeof setTimeout> | null = null
 function startPress() {
   pressing.value = true
   pressTimer = setTimeout(() => {

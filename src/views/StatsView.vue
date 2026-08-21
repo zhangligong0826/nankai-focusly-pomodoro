@@ -18,7 +18,9 @@ import PeakHoursChart from '@/components/stats/PeakHoursChart.vue'
 import DailyReport from '@/components/stats/DailyReport.vue'
 import YearlyChart from '@/components/stats/YearlyChart.vue'
 import WeeklyReport from '@/components/stats/WeeklyReport.vue'
+import ShareCard from '@/components/social/ShareCard.vue'
 import { exportWeeklyReportPDF } from '@/utils/pdfExport'
+import { exportShareImage } from '@/utils/shareImage'
 import { showToast } from '@/composables/useToast'
 
 const statsStore = useStatsStore()
@@ -26,7 +28,9 @@ const checkinStore = useCheckinStore()
 
 const activeTab = ref('weekly')
 const weeklyReportRef = ref(null)
+const shareCardRef = ref(null)
 const exporting = ref(false)
+const sharing = ref(false)
 
 async function onExportReport() {
   if (exporting.value) return
@@ -50,6 +54,26 @@ async function onExportReport() {
     showToast('周报导出失败，请重试', 'error')
   } finally {
     exporting.value = false
+  }
+}
+
+async function onShareCard() {
+  if (sharing.value) return
+  sharing.value = true
+  showToast('正在生成分享图...', 'info', 1500)
+  try {
+    await statsStore.fetchSummary()
+    await nextTick()
+    await new Promise((r) => setTimeout(r, 100))
+    const el = shareCardRef.value?.getEl()
+    const ok = await exportShareImage(el)
+    if (ok) showToast('分享图已生成', 'success')
+    else showToast('分享图生成失败，请重试', 'error')
+  } catch (e) {
+    console.error('[StatsView] 生成分享图失败:', e)
+    showToast('分享图生成失败，请重试', 'error')
+  } finally {
+    sharing.value = false
   }
 }
 
@@ -87,9 +111,14 @@ watch(
   <div class="stats-view">
     <div class="page-header">
       <h2 class="page-title">专注统计</h2>
-      <button class="export-btn" :disabled="exporting" @click="onExportReport">
-        {{ exporting ? '生成中...' : '导出周报' }}
-      </button>
+      <div class="page-actions">
+        <button class="export-btn export-btn--ghost" :disabled="sharing" @click="onShareCard">
+          {{ sharing ? '生成中...' : '生成分享图' }}
+        </button>
+        <button class="export-btn" :disabled="exporting" @click="onExportReport">
+          {{ exporting ? '生成中...' : '导出周报' }}
+        </button>
+      </div>
     </div>
 
     <StatsSummary />
@@ -175,6 +204,9 @@ watch(
 
     <!-- 周报 PDF 模板（隐藏，导出时截图） -->
     <WeeklyReport ref="weeklyReportRef" :visible="exporting" />
+
+    <!-- 分享卡片模板（隐藏，生成分享图时截图） -->
+    <ShareCard ref="shareCardRef" :visible="sharing" />
   </div>
 </template>
 
@@ -190,6 +222,11 @@ watch(
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+.page-actions {
+  display: flex;
+  gap: var(--spacing-sm);
 }
 .page-title {
   font-size: var(--font-size-xl);
@@ -205,6 +242,12 @@ watch(
   font-size: var(--font-size-sm);
   font-weight: 600;
   transition: opacity var(--transition-fast);
+  white-space: nowrap;
+}
+.export-btn--ghost {
+  background-color: transparent;
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-border);
 }
 .export-btn:hover:not(:disabled) {
   opacity: 0.9;

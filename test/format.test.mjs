@@ -6,7 +6,7 @@ import {
   secondsToMMSS,
   formatNumber,
   secondsToHuman,
-} from '../src/utils/format.js'
+} from '../src/utils/format.ts'
 
 test('secondsToMMSS 格式化秒数', () => {
   assert.equal(secondsToMMSS(65), '01:05')

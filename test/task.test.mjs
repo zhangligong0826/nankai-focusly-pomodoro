@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { groupTasks, filterTasks } from '../src/utils/task.js'
+import { groupTasks, filterTasks } from '../src/utils/task.ts'
 
 const today = '2026-08-20'
 const tomorrow = '2026-08-21'

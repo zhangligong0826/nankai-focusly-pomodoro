@@ -11,7 +11,7 @@ import {
   addDays,
   getDateRange,
   relativeDayLabel,
-} from '../src/utils/date.js'
+} from '../src/utils/date.ts'
 
 test('formatDate 按模式格式化时间戳', () => {
   const ts = new Date(2024, 0, 15, 10, 5, 30).getTime()

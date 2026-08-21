@@ -4,7 +4,7 @@ import {
   mergeTodayCheckin,
   computeStreak,
   computeLongestStreak,
-} from '../src/utils/checkin.js'
+} from '../src/utils/checkin.ts'
 
 test('a smaller server aggregate cannot overwrite offline progress', () => {
   const merged = mergeTodayCheckin(

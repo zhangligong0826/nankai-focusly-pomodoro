@@ -35,7 +35,7 @@ function setFocusLock(mode) {
 const shortcuts = [
   { keys: ['Space'], desc: '开始 / 暂停计时（聚焦计时按钮时）' },
   { keys: ['Ctrl', 'P'], desc: '紧急暂停专注（Mac 为 Cmd + P）' },
-  { keys: ['1', '2', '3', '4'], desc: '切换 Tab（计时 / 任务 / 统计 / 设置）' },
+  { keys: ['1', '2', '3', '4', '5'], desc: '切换 Tab（计时 / 任务 / 统计 / 自习 / 设置）' },
   { keys: ['?'], desc: '显示 / 隐藏快捷键帮助' },
   { keys: ['Esc'], desc: '关闭弹窗' },
 ]

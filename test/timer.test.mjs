@@ -4,7 +4,7 @@ import {
   advanceCountdown,
   computeRemaining,
   computeDeadline,
-} from '../src/utils/timer.js'
+} from '../src/utils/timer.ts'
 
 test('countdown completes in the tick that reaches zero', () => {
   assert.deepEqual(advanceCountdown(1), { remainingSeconds: 0, completed: true })

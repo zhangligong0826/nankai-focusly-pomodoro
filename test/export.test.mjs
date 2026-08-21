@@ -5,7 +5,7 @@ import {
   buildExportPayload,
   buildCheckinCSV,
   buildExportJSON,
-} from '../src/utils/exportCore.js'
+} from '../src/utils/exportCore.ts'
 
 function makeStore(overrides = {}) {
   const store = {

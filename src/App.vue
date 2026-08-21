@@ -51,6 +51,8 @@ useKeyboardShortcuts({
   '1': () => router.push('/'),
   '2': () => router.push('/tasks'),
   '3': () => router.push('/stats'),
+  '4': () => router.push('/social'),
+  '5': () => router.push('/settings'),
   '?': () => {
     showShortcuts.value = !showShortcuts.value
   },

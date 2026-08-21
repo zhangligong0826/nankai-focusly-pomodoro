@@ -1,0 +1,59 @@
+/**
+ * LocalStorage 读写封装
+ * @module composables/useLocalStorage
+ * @description 统一 JSON 序列化 / 异常捕获 / 容量检测（QuotaExceededError 提示导出清理）
+ */
+
+import { LS_KEY } from '@/utils/constants'
+import { showToast } from './useToast'
+
+/** LocalStorage 组合式函数 */
+export function useLocalStorage() {
+  /** 读取并反序列化 */
+  function getItem<T = unknown>(key: string, defaultValue: T = null as T): T {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw === null ? defaultValue : (JSON.parse(raw) as T)
+    } catch (e) {
+      console.error(`[LocalStorage] 读取 ${key} 失败:`, e)
+      return defaultValue
+    }
+  }
+
+  /** 序列化并写入 */
+  function setItem(key: string, value: unknown): boolean {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+      return true
+    } catch (e) {
+      if (e && ((e as DOMException).name === 'QuotaExceededError' || (e as DOMException).code === 22)) {
+        showToast('存储空间已满，请导出数据后清理', 'error')
+      }
+      console.error(`[LocalStorage] 写入 ${key} 失败:`, e)
+      return false
+    }
+  }
+
+  /** 删除指定 key */
+  function removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key)
+    } catch (e) {
+      console.error(`[LocalStorage] 删除 ${key} 失败:`, e)
+    }
+  }
+
+  /** 是否存在指定 key */
+  function hasItem(key: string): boolean {
+    try {
+      return localStorage.getItem(key) !== null
+    } catch (e) {
+      return false
+    }
+  }
+
+  return { getItem, setItem, removeItem, hasItem }
+}
+
+export default useLocalStorage
+export { LS_KEY }
