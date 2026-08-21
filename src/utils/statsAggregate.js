@@ -69,4 +69,84 @@ export function computePeakHours(sessions) {
   return { buckets, peak: maxMinutes > 0 ? peak : null }
 }
 
-export default { computeHeatmap, computePeakHours, formatDateLocal }
+/**
+ * 计算日报数据（某日指标 + 任务分布）。
+ * @param {string} dateStr - YYYY-MM-DD
+ * @param {object[]} checkins - 打卡记录
+ * @param {object[]} sessions - 会话（含 taskId/taskTitle）
+ * @returns {{ date:string, pomodoroCount:number, totalMinutes:number, completedTasks:number, taskDistribution:Array }}
+ */
+export function computeDaily(dateStr, checkins, sessions) {
+  const checkin = (checkins || []).find((c) => c && c.date === dateStr) || {}
+  // 当日完成的有效专注会话
+  const focusSessions = (sessions || []).filter(
+    (s) =>
+      s &&
+      s.type === 'focus' &&
+      s.completed !== false &&
+      formatDateLocal(new Date(s.startedAt)) === dateStr
+  )
+  const taskMap = new Map()
+  focusSessions.forEach((s) => {
+    const id = s.taskId || 'untracked'
+    if (!taskMap.has(id)) {
+      taskMap.set(id, {
+        taskId: id,
+        title: s.taskTitle || (id === 'untracked' ? '未绑定任务' : '未知任务'),
+        minutes: 0,
+        count: 0,
+      })
+    }
+    const t = taskMap.get(id)
+    t.minutes += s.durationMinutes || 0
+    t.count += 1
+  })
+  const taskDistribution = [...taskMap.values()].sort(
+    (a, b) => b.minutes - a.minutes
+  )
+  return {
+    date: dateStr,
+    pomodoroCount: checkin.pomodoroCount || 0,
+    totalMinutes: checkin.totalMinutes || 0,
+    completedTasks: taskMap.size,
+    taskDistribution,
+  }
+}
+
+/**
+ * 计算年报数据（某年 12 个月逐月）。
+ * @param {number} year - 年份
+ * @param {object[]} checkins - 打卡记录
+ * @returns {Array<{month:string, focusMinutes:number, pomodoroCount:number}>}
+ */
+export function computeYearly(year, checkins) {
+  const result = []
+  for (let m = 1; m <= 12; m++) {
+    const month = `${year}-${String(m).padStart(2, '0')}`
+    const monthCheckins = (checkins || []).filter((c) =>
+      c && c.date ? c.date.startsWith(month) : false
+    )
+    result.push({
+      month,
+      focusMinutes: monthCheckins.reduce((sum, c) => sum + (c.totalMinutes || 0), 0),
+      pomodoroCount: monthCheckins.reduce((sum, c) => sum + (c.pomodoroCount || 0), 0),
+    })
+  }
+  return result
+}
+
+/**
+ * 生成高效时段建议文案。
+ * @param {Array<{hour:number}>} buckets - 24 小时桶
+ * @param {number|null} peak - 峰值小时
+ * @returns {string}
+ */
+export function buildPeakAdvice(buckets, peak) {
+  if (peak === null || peak === undefined) return ''
+  const end = (peak + 1) % 24
+  const startStr = `${String(peak).padStart(2, '0')}:00`
+  const endStr = `${String(end).padStart(2, '0')}:00`
+  return `你的高效时段是 ${startStr} - ${endStr}，建议把重要任务排在此时段，效率更高。`
+}
+
+export default { computeHeatmap, computePeakHours, computeDaily, computeYearly, buildPeakAdvice, formatDateLocal }

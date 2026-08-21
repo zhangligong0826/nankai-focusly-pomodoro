@@ -8,7 +8,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import statsApi from '@/api/stats'
 import { idbGet } from '@/utils/indexedDB'
-import { computeHeatmap, computePeakHours } from '@/utils/statsAggregate'
+import { computeHeatmap, computePeakHours, computeDaily, computeYearly, buildPeakAdvice } from '@/utils/statsAggregate'
 import {
   getWeekStart,
   getMonthStr,
@@ -37,6 +37,12 @@ export const useStatsStore = defineStore('stats', () => {
   const heatmapData = ref([])
   /** 高效时段数据 */
   const peakHours = ref({ buckets: [], peak: null })
+  /** 高效时段建议文案 */
+  const peakAdvice = ref('')
+  /** 日报数据 */
+  const dailyData = ref(null)
+  /** 年报数据（12 月） */
+  const yearlyData = ref([])
 
   /**
    * 从 IndexedDB 读取真实打卡记录
@@ -259,6 +265,51 @@ export const useStatsStore = defineStore('stats', () => {
     } catch (_) {
       peakHours.value = real
     } finally {
+      peakAdvice.value = buildPeakAdvice(
+        peakHours.value.buckets || [],
+        peakHours.value.peak
+      )
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * 获取日报数据
+   * @param {string} [dateStr] - YYYY-MM-DD，默认今日
+   */
+  async function fetchDaily(dateStr) {
+    isLoading.value = true
+    const date = dateStr || getTodayStr()
+    const real = computeDaily(
+      date,
+      await loadRealCheckins(),
+      await loadRealSessions()
+    )
+    try {
+      const apiData = await statsApi.getDaily?.(date)
+      dailyData.value = real.totalMinutes > 0 ? real : (apiData || real)
+    } catch (_) {
+      dailyData.value = real
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * 获取年报数据
+   * @param {number} [year] - 年份，默认今年
+   */
+  async function fetchYearly(year) {
+    isLoading.value = true
+    const y = year || new Date().getFullYear()
+    const real = computeYearly(y, await loadRealCheckins())
+    try {
+      const apiData = await statsApi.getYearly?.(y)
+      const hasReal = real.some((d) => d.focusMinutes > 0)
+      yearlyData.value = hasReal ? real : (Array.isArray(apiData) ? apiData : real)
+    } catch (_) {
+      yearlyData.value = real
+    } finally {
       isLoading.value = false
     }
   }
@@ -276,6 +327,9 @@ export const useStatsStore = defineStore('stats', () => {
     summary,
     heatmapData,
     peakHours,
+    peakAdvice,
+    dailyData,
+    yearlyData,
     isLoading,
     init,
     fetchSummary,
@@ -283,6 +337,8 @@ export const useStatsStore = defineStore('stats', () => {
     fetchMonthly,
     fetchHeatmap,
     fetchPeakHours,
+    fetchDaily,
+    fetchYearly,
   }
 })
 

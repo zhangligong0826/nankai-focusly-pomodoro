@@ -1,10 +1,10 @@
 /**
- * 高效时段图（ECharts 柱状图）
- * @module components/stats/PeakHoursChart
- * @description 24 小时专注分钟分布，标注峰值时段
+ * 年报柱状图（P2-1）
+ * @module components/stats/YearlyChart
+ * @description 12 个月专注分钟柱状图；复用 ECharts + cssVar 主题适配模式
  */
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
@@ -27,35 +27,25 @@ function cssVar(varName, fallback) {
   return val || fallback
 }
 
-const peakLabel = computed(() => {
-  const peak = statsStore.peakHours.peak
-  if (peak === null || peak === undefined) return ''
-  const end = (peak + 1) % 24
-  return `${String(peak).padStart(2, '0')}:00 - ${String(end).padStart(2, '0')}:00`
-})
-
 function getOption() {
-  const buckets = statsStore.peakHours.buckets || []
-  const hours = buckets.map((b) => `${String(b.hour).padStart(2, '0')}:00`)
-  const minutes = buckets.map((b) => b.minutes || 0)
+  const data = statsStore.yearlyData
+  const safe = Array.isArray(data) ? data : []
   return {
     tooltip: {
       trigger: 'axis',
+      axisPointer: { type: 'shadow' },
       formatter: (params) => {
         const p = params[0] || {}
-        const b = buckets[p.dataIndex] || {}
-        return `${hours[p.dataIndex]}<br/>专注 ${p.value || 0} 分钟<br/>${b.count || 0} 次`
+        const item = safe[p.dataIndex] || {}
+        return `${item.month}<br/>专注 ${p.value || 0} 分钟<br/>${item.pomodoroCount || 0} 个番茄`
       },
     },
     grid: { left: 40, right: 16, top: 24, bottom: 32 },
     xAxis: {
       type: 'category',
-      data: hours,
+      data: safe.map((d) => (d.month || '').slice(5) + '月'),
       axisLine: { lineStyle: { color: cssVar('--color-border', '#e0e0e0') } },
-      axisLabel: {
-        color: cssVar('--color-text-tertiary', '#737373'),
-        interval: 2,
-      },
+      axisLabel: { color: cssVar('--color-text-tertiary', '#737373') },
     },
     yAxis: {
       type: 'value',
@@ -65,12 +55,12 @@ function getOption() {
     series: [
       {
         type: 'bar',
-        data: minutes,
+        data: safe.map((d) => d.focusMinutes || 0),
         itemStyle: {
           color: cssVar('--color-primary', '#e74c3c'),
           borderRadius: [4, 4, 0, 0],
         },
-        barWidth: '60%',
+        barWidth: '55%',
       },
     ],
   }
@@ -89,14 +79,14 @@ onMounted(async () => {
   await nextTick()
   if (chartRef.value) {
     chart = echarts.init(chartRef.value)
-    await statsStore.fetchPeakHours()
+    await statsStore.fetchYearly(new Date().getFullYear())
     render()
     window.addEventListener('resize', onResize)
   }
 })
 
 watch(
-  () => statsStore.peakHours,
+  () => statsStore.yearlyData,
   () => render(),
   { deep: true }
 )
@@ -116,32 +106,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="peak-wrapper">
-    <div class="chart-wrapper card">
-      <div
-        ref="chartRef"
-        class="chart-canvas"
-        role="img"
-        aria-label="24 小时专注时长分布图"
-      ></div>
-    </div>
-    <p v-if="peakLabel" class="peak-hint">
-      <span aria-hidden="true">⚡</span> 你的高效时段是
-      <strong>{{ peakLabel }}</strong>
-    </p>
-    <div v-if="statsStore.peakAdvice" class="peak-advice">
-      <span aria-hidden="true">💡</span>
-      <p>{{ statsStore.peakAdvice }}</p>
-    </div>
+  <div class="chart-wrapper card">
+    <div
+      ref="chartRef"
+      class="chart-canvas"
+      role="img"
+      aria-label="本年度每月专注时长柱状图"
+    ></div>
   </div>
 </template>
 
 <style scoped>
-.peak-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
 .chart-wrapper {
   padding: var(--spacing-md);
   position: relative;
@@ -149,25 +124,6 @@ onUnmounted(() => {
 }
 .chart-canvas {
   width: 100%;
-  height: 260px;
-}
-.peak-hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  text-align: center;
-}
-.peak-hint strong {
-  color: var(--color-primary-text);
-}
-.peak-advice {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  line-height: 1.6;
+  height: 300px;
 }
 </style>

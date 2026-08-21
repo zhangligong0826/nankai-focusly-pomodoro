@@ -1,6 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { computeHeatmap, computePeakHours, formatDateLocal } from '../src/utils/statsAggregate.js'
+import {
+  computeHeatmap,
+  computePeakHours,
+  computeDaily,
+  computeYearly,
+  buildPeakAdvice,
+  formatDateLocal,
+} from '../src/utils/statsAggregate.js'
 
 test('formatDateLocal 格式化为 YYYY-MM-DD', () => {
   assert.equal(formatDateLocal(new Date(2026, 7, 21)), '2026-08-21')
@@ -49,4 +56,50 @@ test('computePeakHours 无有效会话时 peak 为 null', () => {
   assert.equal(peak, null)
   assert.equal(buckets.length, 24)
   assert.ok(buckets.every((b) => b.minutes === 0 && b.count === 0))
+})
+
+test('computeDaily 聚合当日指标与任务分布', () => {
+  const date = '2026-08-21'
+  const checkins = [{ date, pomodoroCount: 3, totalMinutes: 75 }]
+  const sessions = [
+    { taskId: 't1', taskTitle: '任务A', startedAt: new Date(2026, 7, 21, 9, 0).getTime(), durationMinutes: 25, type: 'focus', completed: true },
+    { taskId: 't1', taskTitle: '任务A', startedAt: new Date(2026, 7, 21, 10, 0).getTime(), durationMinutes: 25, type: 'focus', completed: true },
+    { taskId: 't2', taskTitle: '任务B', startedAt: new Date(2026, 7, 21, 11, 0).getTime(), durationMinutes: 25, type: 'focus', completed: true },
+    // 非 focus 或非当日应排除
+    { taskId: 't3', taskTitle: '任务C', startedAt: new Date(2026, 7, 20, 9, 0).getTime(), durationMinutes: 25, type: 'focus', completed: true },
+    { taskId: null, startedAt: new Date(2026, 7, 21, 14, 0).getTime(), durationMinutes: 30, type: 'focus', completed: false },
+  ]
+  const d = computeDaily(date, checkins, sessions)
+  assert.equal(d.pomodoroCount, 3)
+  assert.equal(d.totalMinutes, 75)
+  assert.equal(d.completedTasks, 2) // t1 + t2
+  assert.equal(d.taskDistribution.length, 2)
+  // 任务A 累计 50 分钟排第一
+  assert.equal(d.taskDistribution[0].taskId, 't1')
+  assert.equal(d.taskDistribution[0].minutes, 50)
+  assert.equal(d.taskDistribution[0].count, 2)
+})
+
+test('computeYearly 生成 12 个月数据', () => {
+  const checkins = [
+    { date: '2026-01-05', totalMinutes: 50, pomodoroCount: 2 },
+    { date: '2026-01-06', totalMinutes: 25, pomodoroCount: 1 },
+    { date: '2026-03-10', totalMinutes: 40, pomodoroCount: 1 },
+  ]
+  const yearly = computeYearly(2026, checkins)
+  assert.equal(yearly.length, 12)
+  assert.equal(yearly[0].month, '2026-01')
+  assert.equal(yearly[0].focusMinutes, 75)
+  assert.equal(yearly[0].pomodoroCount, 3)
+  assert.equal(yearly[2].focusMinutes, 40)
+  assert.equal(yearly[11].month, '2026-12')
+  assert.equal(yearly[11].focusMinutes, 0)
+})
+
+test('buildPeakAdvice 生成建议文案', () => {
+  const buckets = Array.from({ length: 24 }, (_, hour) => ({ hour, minutes: 0, count: 0 }))
+  assert.equal(buildPeakAdvice(buckets, null), '')
+  const advice = buildPeakAdvice(buckets, 20)
+  assert.ok(advice.includes('20:00 - 21:00'))
+  assert.ok(advice.includes('高效时段'))
 })

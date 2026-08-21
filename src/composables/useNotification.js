@@ -7,6 +7,10 @@
 import { useLocalStorage } from './useLocalStorage'
 import { LS_KEY } from '@/utils/constants'
 
+/** 模块级去重：同标题在时间窗内不重复弹（P2-4） */
+let lastNotif = { title: '', at: 0 }
+const DEDUP_WINDOW = 3000 // 3 秒
+
 /**
  * 通知组合式函数
  * @returns {{ requestPermission: Function, showNotification: Function, permission: Function }}
@@ -69,6 +73,12 @@ export function useNotification() {
     if (!isSupported() || Notification.permission !== 'granted') {
       return false
     }
+    // 去重：同标题 3 秒内不重复弹（连续完成两个番茄的场景）
+    const now = Date.now()
+    if (title === lastNotif.title && now - lastNotif.at < DEDUP_WINDOW) {
+      return false
+    }
+    lastNotif = { title, at: now }
     try {
       const n = new Notification(title, {
         body,

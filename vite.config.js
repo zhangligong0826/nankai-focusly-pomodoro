@@ -67,6 +67,8 @@ export default defineConfig(({ command }) => ({
         manualChunks: {
           // ECharts 体积较大，独立 chunk + 路由懒加载，首屏不加载
           echarts: ['echarts'],
+          // PDF 导出依赖，动态 import 时再加载
+          pdf: ['html2canvas', 'jspdf'],
           // Vue 全家桶合并为一个 chunk，减少请求数
           vendor: ['vue', 'vue-router', 'pinia', 'axios'],
         },
